@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Anthony (Antonis) Psarras // Maker &amp; Developer</title>
+  <meta name="description" content="Portfolio of Anthony (Antonis) Psarras, a Greek high-school student building products across design, software, 3D printing, and electronics." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Geist:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+
+    <!-- ================================================================
+         Navigation — position: fixed; lives above the scroll container
+    ================================================================ -->
+    <nav class="nav" aria-label="Primary">
+      <div class="nav-inner">
+        <div class="nav-brand">
+          <span class="nav-name">Anthony (Antonis) Psarras</span>
+          <span class="nav-sep" aria-hidden="true">//</span>
+          <span class="nav-role">Maker &amp; Developer</span>
+        </div>
+        <a href="https://github.com/AntonisPsarras"
+           target="_blank" rel="noopener noreferrer"
+           class="nav-github">
+          <span class="icon" data-icon="github" aria-hidden="true"></span>
+          <span>GitHub</span>
+        </a>
+      </div>
+    </nav>
+
+    <!-- ================================================================
+         Orrery — Orbital scroll progress indicator (fixed, right edge)
+         Four elliptical rings, one per section. Dots orbit continuously;
+         active ring brightens. Click a ring to navigate to that section.
+    ================================================================ -->
+    <div class="orrery" id="orrery" aria-hidden="true">
+      <svg viewBox="-65 -65 130 130" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="0" cy="0" r="1.2" fill="#ffffff" fill-opacity="0.5" />
+        <ellipse class="orrery-ring is-active" id="orrery-ring-0" cx="0" cy="0" rx="18" ry="10"
+                 fill="none" stroke="#ffffff" stroke-width="1.2" stroke-opacity="0.75" />
+        <ellipse class="orrery-ring" id="orrery-ring-1" cx="0" cy="0" rx="32" ry="18"
+                 fill="none" stroke="#ffffff" stroke-width="1.2" stroke-opacity="0.25" />
+        <ellipse class="orrery-ring" id="orrery-ring-2" cx="0" cy="0" rx="50" ry="28"
+                 fill="none" stroke="#ffffff" stroke-width="1.2" stroke-opacity="0.25" />
+        <ellipse class="orrery-ring" id="orrery-ring-3" cx="0" cy="0" rx="57" ry="35"
+                 fill="none" stroke="#ffffff" stroke-width="1.2" stroke-opacity="0.25" />
+        <ellipse class="orrery-hit" data-section="0" cx="0" cy="0" rx="18" ry="10"
+                 fill="none" stroke="#ffffff" stroke-width="14" stroke-opacity="0"
+                 pointer-events="stroke" />
+        <ellipse class="orrery-hit" data-section="1" cx="0" cy="0" rx="32" ry="18"
+                 fill="none" stroke="#ffffff" stroke-width="14" stroke-opacity="0"
+                 pointer-events="stroke" />
+        <ellipse class="orrery-hit" data-section="2" cx="0" cy="0" rx="50" ry="28"
+                 fill="none" stroke="#ffffff" stroke-width="14" stroke-opacity="0"
+                 pointer-events="stroke" />
+        <ellipse class="orrery-hit" data-section="3" cx="0" cy="0" rx="57" ry="35"
+                 fill="none" stroke="#ffffff" stroke-width="14" stroke-opacity="0"
+                 pointer-events="stroke" />
+        <circle class="orrery-dot is-active" id="orrery-dot-0" r="2.5" fill="#ffffff" fill-opacity="1.0"  cx="18"  cy="0" />
+        <circle class="orrery-dot" id="orrery-dot-1" r="2.5" fill="#ffffff" fill-opacity="0.45" cx="32"  cy="0" />
+        <circle class="orrery-dot" id="orrery-dot-2" r="2.5" fill="#ffffff" fill-opacity="0.45" cx="50"  cy="0" />
+        <circle class="orrery-dot" id="orrery-dot-3" r="2.5" fill="#ffffff" fill-opacity="0.45" cx="57"  cy="0" />
+      </svg>
+    </div>
+
+    <!-- ================================================================
+         Scroll Container — Full-Page Cinematic Sections
+         Each .slide is at least 100dvh; proximity snap settles between areas.
+    ================================================================ -->
+    <main class="scroll-container">
+
+      <!-- ── Slide 1 : Hero ─────────────────────────────────────────── -->
+      <section class="slide slide--hero" id="hero-sec" aria-labelledby="hero-title">
+        <canvas id="gravity-canvas" aria-hidden="true"></canvas>
+        <div class="slide-content">
+          <p class="hero-label" style="--stagger: 1">LOG_ENTRY // 00</p>
+          <h1 class="hero-title" id="hero-title" style="--stagger: 2">Anthony (Antonis) Psarras</h1>
+          <p class="hero-bio" style="--stagger: 3">
+            I’m a Greek high-school student in Thessaloniki, building real products across
+            product design, software, 3D printing, and electronics.
+            <span class="blink-cursor" aria-hidden="true">_</span>
+          </p>
+          <div class="hero-actions" style="--stagger: 4">
+            <button type="button" class="btn-primary" data-scroll="projects-sec">
+              Inspect Projects
+            </button>
+            <a href="https://github.com/AntonisPsarras"
+               target="_blank" rel="noopener noreferrer"
+               class="btn-outline">
+              <span class="icon" data-icon="github" aria-hidden="true"></span>
+              GitHub Archive
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Slide 2 : About ────────────────────────────────────────── -->
+      <section class="slide slide--about" id="about-sec" aria-labelledby="about-heading">
+        <div class="slide-content">
+          <header class="section-header" style="--stagger: 1">
+            <span class="section-label">LOG_ENTRY // 01</span>
+            <h2 class="section-title" id="about-heading">Curiosity, built into real things</h2>
+          </header>
+
+          <p class="about-intro" style="--stagger: 2">
+            Outside school, I’m driven by the challenge of turning an idea into something useful.
+            Each new skill has helped me bring more of an idea to life, from the first design to a working product.
+          </p>
+
+          <div class="about-grid" style="--stagger: 3">
+            <article class="about-card">
+              <span class="about-kicker">01 // DESIGN &amp; MAKE</span>
+              <h3>From a 3D printer to product design</h3>
+              <p>
+                I bought my first 3D printer a few years ago and soon fell in love with product design.
+                Learning 3D modeling gave me a way to create the things I could imagine, then refine them
+                into practical products.
+              </p>
+            </article>
+
+            <article class="about-card">
+              <span class="about-kicker">02 // CODE &amp; ELECTRONICS</span>
+              <h3>Connecting software to hardware</h3>
+              <p>
+                Learning Python introduced me to computer science. I use AI tools fluently to explore ideas,
+                speed up prototyping, and improve my productivity. To connect code with physical products, I
+                learned PCB design and soldering, and chose to work directly with microcontrollers and sensors
+                instead of starting with Arduino boards.
+              </p>
+            </article>
+
+            <article class="about-card">
+              <span class="about-kicker">03 // SCIENCE &amp; WHAT’S NEXT</span>
+              <h3>Building toward bigger questions</h3>
+              <p>
+                I’ve received awards in national-level mathematics and physics competitions. I also study
+                theoretical physics, especially quantum computing, which I hope to pursue at university.
+                AI and quantum computing are the fields I’m excited to keep learning and contributing to.
+              </p>
+            </article>
+          </div>
+
+          <p class="about-process" style="--stagger: 4">
+            I approach product building as an iterative process: I work through problems, refine each version,
+            and rebuild when it needs a better foundation. I don’t give up when a project gets difficult.
+          </p>
+        </div>
+      </section>
+
+      <!-- ── Slide 3 : Open Source Projects ────────────────────────── -->
+      <section class="slide slide--projects" id="projects-sec" aria-labelledby="projects-heading">
+        <div class="snap-anchor snap-anchor--start" aria-hidden="true"></div>
+        <div class="slide-content">
+
+          <header class="section-header" style="--stagger: 1">
+            <span class="section-label">LOG_ENTRY // 02</span>
+            <h2 class="section-title" id="projects-heading">Engineering Portfolio</h2>
+          </header>
+
+          <!-- Category 1: Software Architecture -->
+          <div class="category-divider reveal-on-scroll" style="--stagger: 2">
+            <span class="category-label">SYS_ARCH // SOFTWARE ARCHITECTURE</span>
+          </div>
+
+          <div class="projects-grid">
+
+            <!-- Aether Gravity ------------------------------------------- -->
+            <article class="project-card reveal-on-scroll" style="--stagger: 3; --cover-pos: 42% 46%" data-project="ag" aria-label="Aether Gravity">
+              <img class="card-bg" src="aether-gravity4.png" alt="Aether Gravity cosmic space simulator" loading="lazy" />
+              
+              <div class="card-content-wrapper">
+                <div class="card-meta-row">
+                  <span class="card-sys-id">SYS_01 // SOFTWARE</span>
+                  <span class="card-status-text">Play Store</span>
+                </div>
+
+                <div class="card-title-group">
+                  <h3 class="card-title">Aether Gravity</h3>
+                  <p class="card-tagline">A Minimalist Cosmic Space Simulator</p>
+                </div>
+
+                <div class="card-chips" aria-label="Technology stack">
+                  <span class="chip">React 18</span>
+                  <span class="chip">TypeScript</span>
+                  <span class="chip">Three.js</span>
+                  <span class="chip">GLSL</span>
+                  <span class="chip">Zustand</span>
+                </div>
+
+                <button type="button" class="inspect-btn" data-project="ag" aria-expanded="false">
+                  <span class="inspect-label">Inspect Project</span>
+                  <span class="inspect-icon" aria-hidden="true">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                  </span>
+                </button>
+              </div>
+            </article>
+
+            <!-- ScholiLink ------------------------------------------------ -->
+            <article class="project-card reveal-on-scroll" style="--stagger: 4; --cover-pos: center 12%" data-project="sl" aria-label="ScholiLink">
+              <img class="card-bg" src="scholilink3.png" alt="ScholiLink Student Platform" loading="lazy" />
+              
+              <div class="card-content-wrapper">
+                <div class="card-meta-row">
+                  <span class="card-sys-id">SYS_02 // SOFTWARE</span>
+                  <span class="card-status-text">Archived Portfolio</span>
+                </div>
+
+                <div class="card-title-group">
+                  <h3 class="card-title">ScholiLink</h3>
+                  <p class="card-tagline">Production-Grade Student Platform</p>
+                </div>
+
+                <div class="card-chips" aria-label="Technology stack">
+                  <span class="chip">Flutter</span>
+                  <span class="chip">Dart</span>
+                  <span class="chip">Riverpod</span>
+                  <span class="chip">Firebase</span>
+                  <span class="chip">TypeScript</span>
+                </div>
+
+                <button type="button" class="inspect-btn" data-project="sl" aria-expanded="false">
+                  <span class="inspect-label">Inspect Project</span>
+                  <span class="inspect-icon" aria-hidden="true">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                  </span>
+                </button>
+              </div>
+            </article>
+
+          </div><!-- /projects-grid -->
+
+          <!-- Category 2: Hardware Engineering -->
+          <div class="category-divider reveal-on-scroll" style="--stagger: 5">
+            <span class="category-label">SYS_HW // HARDWARE ENGINEERING</span>
+          </div>
+
+          <div class="projects-grid">
+
+            <!-- Functional Wind Turbine ----------------------------------- -->
+            <article class="project-card reveal-on-scroll" style="--stagger: 6" data-project="wt" aria-label="Functional Wind Turbine System">
+              <img class="card-bg" src="turbine1.png" alt="Functional Wind Turbine System hardware assembly" loading="lazy" />
+              
+              <div class="card-content-wrapper">
+                <div class="card-meta-row">
+                  <span class="card-sys-id">SYS_03 // HARDWARE</span>
+                  <span class="card-status-text">Production Remix</span>
+                </div>
+
+                <div class="card-title-group">
+                  <h3 class="card-title">Wind Turbine System</h3>
+                  <p class="card-tagline">Functional Balcony Power Generator</p>
+                </div>
+
+                <div class="card-chips" aria-label="Technology stack">
+                  <span class="chip">Hardware</span>
+                  <span class="chip">3D Printing</span>
+                  <span class="chip">Electronics</span>
+                  <span class="chip">Power-Gen</span>
+                  <span class="chip">FDM-CAD</span>
+                </div>
+
+                <button type="button" class="inspect-btn" data-project="wt" aria-expanded="false">
+                  <span class="inspect-label">Inspect Project</span>
+                  <span class="inspect-icon" aria-hidden="true">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                  </span>
+                </button>
+              </div>
+            </article>
+
+            <!-- MoonCamp ------------------------------------------------- -->
+            <article class="project-card reveal-on-scroll" style="--stagger: 7" data-project="mc" aria-label="MoonCamp">
+              <img class="card-bg" src="MoonCamp1.webp" alt="MoonCamp modular lunar habitat scale model" loading="lazy" />
+
+              <div class="card-content-wrapper">
+                <div class="card-meta-row">
+                  <span class="card-sys-id">SYS_04 // HARDWARE</span>
+                  <span class="card-status-text">MakerWorld</span>
+                </div>
+
+                <div class="card-title-group">
+                  <h3 class="card-title">MoonCamp</h3>
+                  <p class="card-tagline">Modular Magnetic Lunar Habitat</p>
+                </div>
+
+                <div class="card-chips" aria-label="Project features">
+                  <span class="chip">3D Printing</span>
+                  <span class="chip">Modular Design</span>
+                  <span class="chip">Magnetic Assembly</span>
+                  <span class="chip">Lunar Habitat</span>
+                  <span class="chip">STEM</span>
+                </div>
+
+                <button type="button" class="inspect-btn" data-project="mc" aria-expanded="false">
+                  <span class="inspect-label">Inspect Project</span>
+                  <span class="inspect-icon" aria-hidden="true">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                  </span>
+                </button>
+              </div>
+            </article>
+
+          </div><!-- /projects-grid -->
+
+          <!-- Category 3: Integrated Systems -->
+          <div class="category-divider reveal-on-scroll" style="--stagger: 8">
+            <span class="category-label">SYS_INT // INTEGRATED SYSTEMS</span>
+          </div>
+
+          <div class="projects-grid">
+
+            <!-- Guardian System ----------------------------------------- -->
+            <article class="project-card reveal-on-scroll" style="--stagger: 9" data-project="gs" aria-label="Guardian System">
+              <img class="card-bg" src="Guardian1.jpg" alt="Guardian System interior RFID portal hardware" loading="lazy" />
+
+              <div class="card-content-wrapper">
+                <div class="card-meta-row">
+                  <span class="card-sys-id">SYS_05 // INTEGRATED</span>
+                  <span class="card-status-text">Open Source</span>
+                </div>
+
+                <div class="card-title-group">
+                  <h3 class="card-title">Guardian System</h3>
+                  <p class="card-tagline">RFID Entry &amp; Home Security</p>
+                </div>
+
+                <div class="card-chips" aria-label="Technology stack">
+                  <span class="chip">Home Assistant</span>
+                  <span class="chip">ESP32</span>
+                  <span class="chip">ESPHome</span>
+                  <span class="chip">RFID</span>
+                  <span class="chip">Frigate</span>
+                </div>
+
+                <button type="button" class="inspect-btn" data-project="gs" aria-expanded="false">
+                  <span class="inspect-label">Inspect Project</span>
+                  <span class="inspect-icon" aria-hidden="true">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                  </span>
+                </button>
+              </div>
+            </article>
+
+          </div><!-- /projects-grid -->
+
+          <div class="projects-grid">
+
+            <!-- LensTile -------------------------------------------------- -->
+            <article class="project-card reveal-on-scroll" style="--stagger: 10" data-project="lt" aria-label="LensTile">
+              <img class="card-bg" src="LensTiles3.png" alt="LensTile modular glasses case with custom magnetic tile" loading="lazy" />
+              
+              <div class="card-content-wrapper">
+                <div class="card-meta-row">
+                  <span class="card-sys-id">SYS_06 // INTEGRATED</span>
+                  <span class="card-status-text">Open Source</span>
+                </div>
+
+                <div class="card-title-group">
+                  <h3 class="card-title">LensTile</h3>
+                  <p class="card-tagline">Magnetic Image Tiles for Modular Glasses Cases</p>
+                </div>
+
+                <div class="card-chips" aria-label="Technology stack">
+                  <span class="chip">JavaScript</span>
+                  <span class="chip">Canvas</span>
+                  <span class="chip">Web Workers</span>
+                  <span class="chip">3D Printing</span>
+                  <span class="chip">STL / 3MF</span>
+                </div>
+
+                <button type="button" class="inspect-btn" data-project="lt" aria-expanded="false">
+                  <span class="inspect-label">Inspect Project</span>
+                  <span class="inspect-icon" aria-hidden="true">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                  </span>
+                </button>
+              </div>
+            </article>
+
+            <!-- BrickCast ------------------------------------------------ -->
+            <article class="project-card reveal-on-scroll" style="--stagger: 11" data-project="bc" aria-label="BrickCast">
+              <img class="card-bg" src="BrickCast4.png" alt="BrickCast interlocking brick model converted from an STL mesh" loading="lazy" />
+              
+              <div class="card-content-wrapper">
+                <div class="card-meta-row">
+                  <span class="card-sys-id">SYS_07 // INTEGRATED</span>
+                  <span class="card-status-text">Open Source</span>
+                </div>
+
+                <div class="card-title-group">
+                  <h3 class="card-title">BrickCast</h3>
+                  <p class="card-tagline">STL to Interlocking Brick Builds with Full Guidance</p>
+                </div>
+
+                <div class="card-chips" aria-label="Technology stack">
+                  <span class="chip">JavaScript</span>
+                  <span class="chip">Three.js</span>
+                  <span class="chip">WebGL</span>
+                  <span class="chip">Python</span>
+                  <span class="chip">STL / OBJ</span>
+                </div>
+
+                <button type="button" class="inspect-btn" data-project="bc" aria-expanded="false">
+                  <span class="inspect-label">Inspect Project</span>
+                  <span class="inspect-icon" aria-hidden="true">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                  </span>
+                </button>
+              </div>
+            </article>
+
+          </div><!-- /projects-grid -->
+
+        </div><!-- /slide-content -->
+        <div class="snap-anchor snap-anchor--end" aria-hidden="true"></div>
+      </section><!-- /slide--projects -->
+
+      <!-- ── Slide 4 : Contact ─────────────────────────────────────── -->
+      <section class="slide slide--contact" id="contact-sec" aria-label="Contact">
+        <div class="slide-content">
+          <span class="section-label" style="--stagger: 1">LOG_ENTRY // 03</span>
+          <h2 class="contact-title" style="--stagger: 2">Let&rsquo;s Connect</h2>
+          <p class="contact-copy" style="--stagger: 3">
+            Have a project or an idea to discuss? I’d love to hear from you.
+          </p>
+          <nav class="contact-links" style="--stagger: 4" aria-label="Contact links">
+            <a href="https://github.com/AntonisPsarras"
+               target="_blank" rel="noopener noreferrer"
+               class="btn-outline">
+              <span class="icon" data-icon="github" aria-hidden="true"></span>
+              GitHub Archive
+            </a>
+            <a href="https://x.com/AntonPsar56"
+               target="_blank" rel="noopener noreferrer"
+               class="btn-outline">
+              <span class="icon" data-icon="x" aria-hidden="true"></span>
+              Twitter
+            </a>
+            <a href="mailto:antonpsar10@gmail.com" class="btn-outline">
+              Email
+              <span class="icon" data-icon="arrow-up-right" aria-hidden="true"></span>
+            </a>
+          </nav>
+          <p class="footer-copy" style="--stagger: 5">&copy; 2026 Anthony (Antonis) Psarras</p>
+        </div>
+      </section><!-- /slide--contact -->
+
+    </main><!-- /scroll-container -->
+
+    <!-- ================================================================
+         Project Modal — Floating Liquid Glass Overlay
+    ================================================================ -->
+    <div id="project-modal"
+         class="modal-overlay"
+         role="dialog"
+         aria-modal="true"
+         aria-hidden="true"
+         aria-label="Project details">
+
+      <div class="modal-backdrop" id="modal-backdrop"></div>
+
+      <div class="modal-card">
+
+        <!-- Non-scrolling top: scroll-snap carousel with close button overlaid -->
+        <div class="modal-top">
+          <div class="modal-image-gallery" id="modal-gallery" role="list" aria-label="Project screenshots"></div>
+          <div class="carousel-controls" id="carousel-controls" hidden>
+            <button type="button" class="carousel-nav carousel-nav--prev" id="carousel-prev" aria-label="Previous image">
+              <span aria-hidden="true">‹</span>
+            </button>
+            <div class="carousel-dots" id="carousel-dots" role="tablist" aria-label="Gallery slides"></div>
+            <button type="button" class="carousel-nav carousel-nav--next" id="carousel-next" aria-label="Next image">
+              <span aria-hidden="true">›</span>
+            </button>
+          </div>
+          <button type="button" class="modal-close-btn" id="modal-close-btn"
+                  aria-label="Close project details">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <path d="M18 6 6 18"/>
+              <path d="m6 6 12 12"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Scrollable body -->
+        <div class="modal-body">
+
+          <!-- Aether Gravity ------------------------------------------- -->
+          <div class="modal-content" id="mcontent-ag" aria-hidden="true">
+
+            <div class="modal-meta-row">
+              <span class="modal-sys-id">SYS_01 // SOFTWARE</span>
+              <a href="https://play.google.com/store/apps/details?id=com.aethergravity.app&pli=1"
+                 target="_blank" rel="noopener noreferrer"
+                 class="card-status-badge">
+                Play Store
+                <span class="icon" data-icon="arrow-up-right" aria-hidden="true"></span>
+              </a>
+            </div>
+
+            <div class="modal-title-group">
+              <h3 class="modal-title">Aether Gravity</h3>
+              <p class="modal-tagline">A Minimalist Cosmic Space Simulator</p>
+            </div>
+
+            <div class="modal-links">
+              <a href="https://github.com/AntonisPsarras/Aether-Gravity"
+                 target="_blank" rel="noopener noreferrer"
+                 class="card-link">
+                <span class="icon" data-icon="github" aria-hidden="true"></span>
+                GitHub
+              </a>
+              <a href="https://aether-gravity.netlify.app/"
+                 target="_blank" rel="noopener noreferrer"
+                 class="card-link">
+                <span class="icon" data-icon="arrow-up-right" aria-hidden="true"></span>
+                Live Demo
+              </a>
+              <a href="https://play.google.com/store/apps/details?id=com.aethergravity.app&pli=1"
+                 target="_blank" rel="noopener noreferrer"
+                 class="card-link">
+                <span class="icon" data-icon="zap" aria-hidden="true"></span>
+                Play Store
+              </a>
+            </div>
+
+            <p class="details-section-label">// KEY CAPABILITIES // AETHER-GRAVITY</p>
+
+            <ol class="capabilities-list" aria-label="Key capabilities">
+              <li>
+                <span class="cap-idx">[01]</span>
+                <span>Real-time N-body physics with GPU-accelerated particle systems; Hill sphere and Roche limit stability tooling</span>
+              </li>
+              <li>
+                <span class="cap-idx">[02]</span>
+                <span>Dynamic LOD black holes — Kerr-type horizons with gravitational lensing and relativistic Doppler effects</span>
+              </li>
+              <li>
+                <span class="cap-idx">[03]</span>
+                <span>State-driven terrestrial shaders — procedural rocky and gas-giant surfaces with atmosphere and cloud layers</span>
+              </li>
+              <li>
+                <span class="cap-idx">[04]</span>
+                <span>Universe sandbox — time control, precision launch mechanics, habitable-zone visualization, and supernova events</span>
+              </li>
+            </ol>
+
+            <div class="details-spec-row">
+              <div class="details-spec-block">
+                <p class="details-block-label">// PIPELINE SPECIFICATION</p>
+                <p class="details-block-text">
+                  Features real-time gravitational interactions with GPU-accelerated particle systems,
+                  Hill sphere and Roche limit stability tooling, Kerr-type black holes with gravitational
+                  lensing and relativistic Doppler effects, procedural rocky and gas-giant planetary
+                  surfaces with cloud and atmosphere layers, plus a full universe sandbox with time control,
+                  precision launch mechanics, habitable-zone visualization, and supernova events.
+                </p>
+              </div>
+              <div class="details-spec-block">
+                <p class="details-block-label">// CLASSIFICATIONS</p>
+                <div class="details-tags">
+                  <span class="detail-tag">#Space-Simulation</span>
+                  <span class="detail-tag">#N-Body-Physics</span>
+                  <span class="detail-tag">#GLSL-Shaders</span>
+                  <span class="detail-tag">#Mobile-App</span>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /mcontent-ag -->
+
+          <!-- ScholiLink ----------------------------------------------- -->
+          <div class="modal-content" id="mcontent-sl" aria-hidden="true">
+
+            <!-- Firebase boot-sequence terminal -->
+            <div class="terminal-window" id="sl-terminal">
+              <div class="terminal-header">
+                <span class="terminal-label">// BOOT SEQUENCE // FIREBASE EMULATOR</span>
+                <button class="terminal-replay-btn" id="terminal-replay" type="button">replay</button>
+              </div>
+              <div class="terminal-body" id="terminal-body"></div>
+            </div>
+
+            <div class="modal-meta-row">
+              <span class="modal-sys-id">SYS_02 // SOFTWARE</span>
+              <span class="card-status-text">Archived Portfolio</span>
+            </div>
+
+            <div class="modal-title-group">
+              <h3 class="modal-title">ScholiLink</h3>
+              <p class="modal-tagline">Production-Grade Student Platform — Real Auth, Real Rules, Real AI</p>
+            </div>
+
+            <div class="modal-links">
+              <a href="https://github.com/AntonisPsarras/Scholilink"
+                 target="_blank" rel="noopener noreferrer"
+                 class="card-link">
+                <span class="icon" data-icon="github" aria-hidden="true"></span>
+                GitHub
+              </a>
+            </div>
+
+            <p class="details-section-label">// KEY CAPABILITIES // SCHOLILINK</p>
+
+            <ol class="capabilities-list" aria-label="Key capabilities">
+              <li>
+                <span class="cap-idx">[01]</span>
+                <span>Dual-mode architecture — Firebase Emulator Suite + deterministic AI mocks vs. full live cloud + real Gemini, no fork required</span>
+              </li>
+              <li>
+                <span class="cap-idx">[02]</span>
+                <span>Server-authoritative backend — quotas, safety scoring, social graph mutations, and AI orchestration in TypeScript Cloud Functions</span>
+              </li>
+              <li>
+                <span class="cap-idx">[03]</span>
+                <span>Tight security rules — Firestore and Storage rules are uid-scoped and field-locked; server-only collections denied at the rules layer</span>
+              </li>
+              <li>
+                <span class="cap-idx">[04]</span>
+                <span>AI done responsibly — Gemini called only through Functions, never from a client API key; OCR, tutoring, smart notes, exam quizzes</span>
+              </li>
+              <li>
+                <span class="cap-idx">[05]</span>
+                <span>Student-grade UX — Sparks gamification, Greek-first localization, calendar + workload storytelling, polls + voice notes in chat</span>
+              </li>
+            </ol>
+
+            <div class="details-spec-row">
+              <div class="details-spec-block">
+                <p class="details-block-label">// PIPELINE SPECIFICATION</p>
+                <p class="details-block-text">
+                  Ships with polished light and dark themes, Greek-first localization, and surfaces for
+                  schedule, homework workflow, grades, AI study help via Gemini, classroom chat with voice
+                  notes and polls, exam-readiness quizzes, and university &Mu;&omicron;&rho;&iota;&alpha; planning — all secured
+                  server-side. The AI is called exclusively through Cloud Functions; no API key is ever
+                  exposed to the client.
+                </p>
+              </div>
+              <div class="details-spec-block">
+                <p class="details-block-label">// CLASSIFICATIONS</p>
+                <div class="details-tags">
+                  <span class="detail-tag">#Education-Tech</span>
+                  <span class="detail-tag">#Flutter</span>
+                  <span class="detail-tag">#Firebase-Architecture</span>
+                  <span class="detail-tag">#AI-Integration</span>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /mcontent-sl -->
+
+          <!-- Wind Turbine System -------------------------------------- -->
+          <div class="modal-content" id="mcontent-wt" aria-hidden="true">
+
+            <div class="modal-meta-row">
+              <span class="modal-sys-id">SYS_03 // HARDWARE</span>
+              <a href="https://makerworld.com/en/models/2967248-wind-turbine-project-functional-simple-turbine#profileId-3327133"
+                 target="_blank" rel="noopener noreferrer"
+                 class="card-status-badge">
+                MakerWorld
+                <span class="icon" data-icon="arrow-up-right" aria-hidden="true"></span>
+              </a>
+            </div>
+
+            <div class="modal-title-group">
+              <h3 class="modal-title">Functional Wind Turbine System</h3>
+              <p class="modal-tagline">Balcony-Ready Power-Generating System & Off-Grid Charger</p>
+            </div>
+
+            <div class="modal-links">
+              <a href="https://makerworld.com/en/models/2967248-wind-turbine-project-functional-simple-turbine#profileId-3327133"
+                 target="_blank" rel="noopener noreferrer"
+                 class="card-link">
+                <span class="icon" data-icon="arrow-up-right" aria-hidden="true"></span>
+                MakerWorld Page
+              </a>
+            </div>
+
+            <p class="details-section-label">// KEY CAPABILITIES // WIND-TURBINE</p>
+
+            <ol class="capabilities-list" aria-label="Key capabilities">
+              <li>
+                <span class="cap-idx">[01]</span>
+                <span>Dual-capacity motor housing — optimized for standard 24mm or high-power 32mm motors to maximize battery charging efficiency</span>
+              </li>
+              <li>
+                <span class="cap-idx">[02]</span>
+                <span>Zero-friction yaw tracking — integrated high-tolerance bearing pivot system (27mm OD / 15.5mm ID) with internal anti-wrap cable routing</span>
+              </li>
+              <li>
+                <span class="cap-idx">[03]</span>
+                <span>Structural resilience — anti-sag tail stabilizer and weatherproof motor cowling custom-engineered for harsh balcony environments</span>
+              </li>
+              <li>
+                <span class="cap-idx">[04]</span>
+                <span>Passive AC-to-DC bridge rectification — onboard 1N5819 Schottky diode array with high-capacity electrolytic ripple filtration</span>
+              </li>
+              <li>
+                <span class="cap-idx">[05]</span>
+                <span>Integrated battery management — TP4056 lithium-ion charge controller with full over-charge/over-discharge cell protection</span>
+              </li>
+            </ol>
+
+            <div class="details-spec-row">
+              <div class="details-spec-block">
+                <p class="details-block-label">// PIPELINE SPECIFICATION</p>
+                <p class="details-block-text">
+                  A fully functional wind-energy harvesting system custom-engineered for apartment balconies and off-grid battery charging. Built as an optimized FDM 3D-printed assembly, it features a weather-resistant motor cover, structural tail stabilizing braces to prevent plastic creep, and a friction-free bearing-pivot yaw system with clean internal cable management. The integrated electronics pipeline utilizes an on-board Schottky bridge rectifier and dual MT3608 boost converters to regulate erratic, wind-generated voltages into a stable charge current for an 18650 lithium-ion cell via a TP4056 battery management module, providing a robust off-grid power solution.
+                </p>
+              </div>
+              <div class="details-spec-block">
+                <p class="details-block-label">// CLASSIFICATIONS</p>
+                <div class="details-tags">
+                  <span class="detail-tag">#Hardware</span>
+                  <span class="detail-tag">#3D-Printing</span>
+                  <span class="detail-tag">#Electronics</span>
+                  <span class="detail-tag">#Off-Grid</span>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /mcontent-wt -->
+
+          <!-- MoonCamp ------------------------------------------------- -->
+          <div class="modal-content" id="mcontent-mc" aria-hidden="true">
+
+            <div class="modal-meta-row">
+              <span class="modal-sys-id">SYS_04 // HARDWARE</span>
+              <a href="https://makerworld.com/en/models/2492018-modular-moon-base-magnetic-lunar-habitat#profileId-2738460"
+                 target="_blank" rel="noopener noreferrer"
+                 class="card-status-badge">
+                MakerWorld
+                <span class="icon" data-icon="arrow-up-right" aria-hidden="true"></span>
+              </a>
+            </div>
+
+            <div class="modal-title-group">
+              <h3 class="modal-title">MoonCamp</h3>
+              <p class="modal-tagline">Modular Moon Base — A Magnetic Two-Person Lunar Habitat</p>
+            </div>
+
+            <div class="modal-links">
+              <a href="https://makerworld.com/en/models/2492018-modular-moon-base-magnetic-lunar-habitat#profileId-2738460"
+                 target="_blank" rel="noopener noreferrer"
+                 class="card-link">
+                <span class="icon" data-icon="arrow-up-right" aria-hidden="true"></span>
+                MakerWorld Page
+              </a>
+            </div>
+
+            <p class="details-section-label">// KEY CAPABILITIES // MOONCAMP</p>
+
+            <ol class="capabilities-list" aria-label="Key capabilities">
+              <li>
+                <span class="cap-idx">[01]</span>
+                <span>Fully 3D-printable, two-person lunar settlement built from specialized modules linked by enclosed corridors</span>
+              </li>
+              <li>
+                <span class="cap-idx">[02]</span>
+                <span>Removable module domes and corridor covers held by 8 × 2 mm magnets reveal the detailed interiors</span>
+              </li>
+              <li>
+                <span class="cap-idx">[03]</span>
+                <span>Cylindrical connectors join the sections, while movable corridor doors illustrate airlock isolation</span>
+              </li>
+              <li>
+                <span class="cap-idx">[04]</span>
+                <span>Control, energy, ISRU, greenhouse, laboratory, living, medical, recreation, and rover spaces show the systems a long-duration habitat would need</span>
+              </li>
+              <li>
+                <span class="cap-idx">[05]</span>
+                <span>English and Greek labeled versions support STEM displays and classroom exploration</span>
+              </li>
+            </ol>
+
+            <div class="details-spec-row">
+              <div class="details-spec-block">
+                <p class="details-block-label">// PIPELINE SPECIFICATION</p>
+                <p class="details-block-text">
+                  Created for an ESA Moon Camp project, MoonCamp turns a lunar south-pole
+                  settlement study into a modular physical display. Magnetic shells open to
+                  reveal interiors and the connected layout makes power, resources, food,
+                  research, healthcare, maintenance, and crew wellbeing easy to explore.
+                  It is a conceptual educational scale model, not a certified habitat.
+                </p>
+              </div>
+              <div class="details-spec-block">
+                <p class="details-block-label">// CLASSIFICATIONS</p>
+                <div class="details-tags">
+                  <span class="detail-tag">#3D-Printing</span>
+                  <span class="detail-tag">#Modular-Design</span>
+                  <span class="detail-tag">#Magnetic-Assembly</span>
+                  <span class="detail-tag">#STEM-Display</span>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /mcontent-mc -->
+
+          <!-- LensTile ------------------------------------------------- -->
+          <div class="modal-content" id="mcontent-lt" aria-hidden="true">
+
+            <div class="modal-meta-row">
+              <span class="modal-sys-id">SYS_06 // INTEGRATED</span>
+              <div class="modal-meta-badges">
+                <a href="https://github.com/AntonisPsarras/lenstile"
+                   target="_blank" rel="noopener noreferrer"
+                   class="card-status-badge">
+                  GitHub
+                  <span class="icon" data-icon="github" aria-hidden="true"></span>
+                </a>
+                <a href="https://antonispsarras.github.io/lenstile/"
+                   target="_blank" rel="noopener noreferrer"
+                   class="card-status-badge">
+                  Live App
+                  <span class="icon" data-icon="arrow-up-right" aria-hidden="true"></span>
+                </a>
+                <a href="https://makerworld.com/en/models/3100733-lenstile-modular-glasses-case-with-custom-tiles#profileId-3495008"
+                   target="_blank" rel="noopener noreferrer"
+                   class="card-status-badge">
+                  MakerWorld
+                  <span class="icon" data-icon="arrow-up-right" aria-hidden="true"></span>
+                </a>
+              </div>
+            </div>
+
+            <div class="modal-title-group">
+              <h3 class="modal-title">LensTile</h3>
+              <p class="modal-tagline">Open-Source Magnetic Image Tiles for Modular Glasses Cases</p>
+            </div>
+
+            <div class="modal-links">
+              <a href="https://github.com/AntonisPsarras/lenstile"
+                 target="_blank" rel="noopener noreferrer"
+                 class="card-link">
+                <span class="icon" data-icon="github" aria-hidden="true"></span>
+                GitHub
+              </a>
+              <a href="https://antonispsarras.github.io/lenstile/"
+                 target="_blank" rel="noopener noreferrer"
+                 class="card-link">
+                <span class="icon" data-icon="arrow-up-right" aria-hidden="true"></span>
+                Live App
+              </a>
+              <a href="https://makerworld.com/en/models/3100733-lenstile-modular-glasses-case-with-custom-tiles#profileId-3495008"
+                 target="_blank" rel="noopener noreferrer"
+                 class="card-link">
+                <span class="icon" data-icon="zap" aria-hidden="true"></span>
+                MakerWorld
+              </a>
+            </div>
+
+            <p class="details-section-label">// KEY CAPABILITIES // LENSTILE</p>
+
+            <ol class="capabilities-list" aria-label="Key capabilities">
+              <li>
+                <span class="cap-idx">[01]</span>
+                <span>Local-first image pipeline — PNG / JPEG / WebP import with crop, pan, zoom, rotate, and flip; all processing stays on-device</span>
+              </li>
+              <li>
+                <span class="cap-idx">[02]</span>
+                <span>Deterministic 1–8 color reduction with nozzle-aware preparation for 0.2 mm and 0.4 mm profiles and printability analysis</span>
+              </li>
+              <li>
+                <span class="cap-idx">[03]</span>
+                <span>Smooth and Relief tile surfaces exporting one-filament STL and multicolor 3MF at the 148 × 53 × 4 mm Tile V1 spec</span>
+              </li>
+              <li>
+                <span class="cap-idx">[04]</span>
+                <span>Modular magnetic hardware — custom glasses case with flush magnet recesses for swappable, printable image tiles</span>
+              </li>
+              <li>
+                <span class="cap-idx">[05]</span>
+                <span>Zero runtime dependencies — no accounts, uploads, or analytics; privacy-first browser geometry and packaging via Web Workers</span>
+              </li>
+            </ol>
+
+            <div class="details-spec-row">
+              <div class="details-spec-block">
+                <p class="details-block-label">// PIPELINE SPECIFICATION</p>
+                <p class="details-block-text">
+                  An integrated hardware–software system that turns a personal photo into a
+                  printable magnetic tile for a custom modular glasses case. The browser app
+                  fits artwork to a 148 × 53 mm frame, reduces it to print colors, checks
+                  nozzle-aware printability, then builds Smooth or Relief geometry as a
+                  one-filament STL or multicolor 3MF — with magnet recesses matching the
+                  open-source case on MakerWorld. Everything runs locally; images never leave
+                  the device.
+                </p>
+              </div>
+              <div class="details-spec-block">
+                <p class="details-block-label">// CLASSIFICATIONS</p>
+                <div class="details-tags">
+                  <span class="detail-tag">#Local-First</span>
+                  <span class="detail-tag">#3D-Printing</span>
+                  <span class="detail-tag">#Modular-Hardware</span>
+                  <span class="detail-tag">#Open-Source</span>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /mcontent-lt -->
+
+          <!-- BrickCast ------------------------------------------------ -->
+          <div class="modal-content" id="mcontent-bc" aria-hidden="true">
+
+            <div class="modal-meta-row">
+              <span class="modal-sys-id">SYS_07 // INTEGRATED</span>
+              <a href="https://github.com/AntonisPsarras/BrickCast"
+                 target="_blank" rel="noopener noreferrer"
+                 class="card-status-badge">
+                GitHub
+                <span class="icon" data-icon="github" aria-hidden="true"></span>
+              </a>
+            </div>
+
+            <div class="modal-title-group">
+              <h3 class="modal-title">BrickCast</h3>
+              <p class="modal-tagline">Local-First STL / OBJ to Interlocking Brick Builds</p>
+            </div>
+
+            <div class="modal-links">
+              <a href="https://github.com/AntonisPsarras/BrickCast"
+                 target="_blank" rel="noopener noreferrer"
+                 class="card-link">
+                <span class="icon" data-icon="github" aria-hidden="true"></span>
+                GitHub
+              </a>
+            </div>
+
+            <p class="details-section-label">// KEY CAPABILITIES // BRICKCAST</p>
+
+            <ol class="capabilities-list" aria-label="Key capabilities">
+              <li>
+                <span class="cap-idx">[01]</span>
+                <span>Local-first mesh pipeline — import STL / OBJ up to 75 MB, then ground, place, rotate, auto-orient, or pick a face as the build base</span>
+              </li>
+              <li>
+                <span class="cap-idx">[02]</span>
+                <span>Configurable voxelization and brick packing — resolution, infill, and color controls that trade detail against piece count</span>
+              </li>
+              <li>
+                <span class="cap-idx">[03]</span>
+                <span>Dual build modes — deterministic rectangular-only Offline builds, plus Advanced mode with slopes, plates, tiles, arches, and panels</span>
+              </li>
+              <li>
+                <span class="cap-idx">[04]</span>
+                <span>Layer inspection and stability review — scrub Mesh / Grid / Bricks views and surface weak or floating connections before export</span>
+              </li>
+              <li>
+                <span class="cap-idx">[05]</span>
+                <span>Parts inventory, printable build guides, and ASCII STL export — full guidance from converted geometry to physical assembly</span>
+              </li>
+            </ol>
+
+            <div class="details-spec-row">
+              <div class="details-spec-block">
+                <p class="details-block-label">// PIPELINE SPECIFICATION</p>
+                <p class="details-block-text">
+                  A local-first browser system that turns triangle meshes into approximate
+                  interlocking-brick builds. Most work stays on-device: orientation,
+                  voxelization, packing, layer scrubbing, stability checks, inventory, and
+                  printable instructions. An optional Advanced Online path can enrich special
+                  parts through a local Python proxy without uploading the original STL/OBJ.
+                  The result is an optimized brick design with full build guidance — from mesh
+                  import to printable step-by-step layers.
+                </p>
+              </div>
+              <div class="details-spec-block">
+                <p class="details-block-label">// CLASSIFICATIONS</p>
+                <div class="details-tags">
+                  <span class="detail-tag">#Local-First</span>
+                  <span class="detail-tag">#Mesh-Conversion</span>
+                  <span class="detail-tag">#Brick-Builds</span>
+                  <span class="detail-tag">#Open-Source</span>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /mcontent-bc -->
+
+          <!-- Guardian System ----------------------------------------- -->
+          <div class="modal-content" id="mcontent-gs" aria-hidden="true">
+
+            <div class="modal-meta-row">
+              <span class="modal-sys-id">SYS_05 // INTEGRATED</span>
+              <a href="https://github.com/AntonisPsarras/guardian-system"
+                 target="_blank" rel="noopener noreferrer"
+                 class="card-status-badge">
+                GitHub
+                <span class="icon" data-icon="github" aria-hidden="true"></span>
+              </a>
+            </div>
+
+            <div class="modal-title-group">
+              <h3 class="modal-title">Guardian System</h3>
+              <p class="modal-tagline">Home Assistant RFID Entry, Presence &amp; Camera-Driven Security</p>
+            </div>
+
+            <div class="modal-links">
+              <a href="https://github.com/AntonisPsarras/guardian-system"
+                 target="_blank" rel="noopener noreferrer"
+                 class="card-link">
+                <span class="icon" data-icon="github" aria-hidden="true"></span>
+                GitHub
+              </a>
+              <a href="https://makerworld.com/en/collections/36079462-guardian-system"
+                 target="_blank" rel="noopener noreferrer"
+                 class="card-link">
+                <span class="icon" data-icon="arrow-up-right" aria-hidden="true"></span>
+                Print Files
+              </a>
+            </div>
+
+            <p class="details-section-label">// KEY CAPABILITIES // GUARDIAN-SYSTEM</p>
+
+            <ol class="capabilities-list" aria-label="Key capabilities">
+              <li>
+                <span class="cap-idx">[01]</span>
+                <span>Two ESP32 RFID readers share one Home Assistant decision path for the interior portal and outdoor doorbell</span>
+              </li>
+              <li>
+                <span class="cap-idx">[02]</span>
+                <span>Per-key presence tracking uses passage windows, door movement, reader intent, and a lever sensor to infer direction</span>
+              </li>
+              <li>
+                <span class="cap-idx">[03]</span>
+                <span>Elevated mode can challenge an unauthenticated opening with a card and master PIN before sounding an alarm</span>
+              </li>
+              <li>
+                <span class="cap-idx">[04]</span>
+                <span>Frigate person detection and measured camera brightness support alerts and automatic door-lamp control</span>
+              </li>
+              <li>
+                <span class="cap-idx">[05]</span>
+                <span>Per-person phone alerts, stolen-card handling, device watchdogs, and a custom Home Assistant panel connect the system</span>
+              </li>
+            </ol>
+
+            <div class="details-spec-row">
+              <div class="details-spec-block">
+                <p class="details-block-label">// PIPELINE SPECIFICATION</p>
+                <p class="details-block-text">
+                  Guardian combines Home Assistant automations with ESPHome firmware, two
+                  printed RFID devices, a camera and door lamp, and a custom control panel.
+                  It runs in one household as a documented DIY system, not a supported
+                  security product. The offline siren and recent alarm-path changes still
+                  need on-hardware verification.
+                </p>
+              </div>
+              <div class="details-spec-block">
+                <p class="details-block-label">// CLASSIFICATIONS</p>
+                <div class="details-tags">
+                  <span class="detail-tag">#Home-Assistant</span>
+                  <span class="detail-tag">#ESP32</span>
+                  <span class="detail-tag">#RFID</span>
+                  <span class="detail-tag">#Open-Source</span>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /mcontent-gs -->
+
+        </div><!-- /modal-body -->
+
+      </div><!-- /modal-card -->
+
+    </div><!-- /project-modal -->
+
+  </div><!-- /app -->
+  <script src="script.js" defer></script>
+</body>
+</html>
