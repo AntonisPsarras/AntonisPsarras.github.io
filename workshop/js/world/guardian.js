@@ -2,7 +2,7 @@
    guardian.js — the Guardian System's hardware, built from the project photos.
 
      Door lamp   : on the wall above the door, outside. Black printed body, three
-                   frosted panels, a camera block with a wide lens (Guardian3.jpg)
+                   frosted panels, a camera module tipped 45° down (Guardian3.jpg)
      Doorbell    : white printed box with a bell icon, on the corridor's left wall
                    (Guardian2.jpg)
      Portal      : inside, a frosted shell with a speaker, a small screen and a
@@ -105,24 +105,33 @@ export function buildGuardian(kit, world) {
   addPanel(-0.0988, 0.039, 0.1, -sideAng);
   addPanel(0.0988, 0.039, 0.1, sideAng);
 
-  // camera block with a wide lens, a red status dot and a small amber LED
-  kit.box(0.058, 0.09, 0.094, M.black, 0, 0.027, 0.047, lamp);
-  kit.box(0.044, 0.003, 0.0965, M.steelDark, 0, -0.013, 0.048, lamp);                  // vent slot under the block
-  const lensRing = kit.cyl(0.0125, 0.0125, 0.004, M.steelDark, 20, 0.004, 0.026, 0.0945, lamp);
+  // camera module: a compact black block let into the centre facet, tipped so the lens looks 45° down.
+  // Its top edge sits flush in the facade; its lower edge steps out below the band, as in Guardian3.jpg.
+  const CAM_PITCH = Math.PI / 4;
+  const camMod = new THREE.Group();
+  camMod.position.set(0, 0.032, 0.068);
+  camMod.rotation.x = CAM_PITCH;                   // +x tips local +z (the lens axis) down
+  lamp.add(camMod);
+  kit.box(0.07, 0.064, 0.045, M.black, 0, 0, 0.0025, camMod);
+  kit.box(0.05, 0.0025, 0.022, M.steelDark, 0, -0.0325, 0.004, camMod);                // vent slot on the underside
+  const lensRing = kit.cyl(0.0095, 0.0095, 0.004, M.steelDark, 20, 0.004, -0.01, 0.0245, camMod);
   lensRing.rotation.x = Math.PI / 2;
-  const lens = new THREE.Mesh(new THREE.CylinderGeometry(0.0098, 0.0098, 0.0045, kit.seg(20)), lensMat);
+  const lens = new THREE.Mesh(new THREE.CylinderGeometry(0.0074, 0.0074, 0.0045, kit.seg(20)), lensMat);
   lens.rotation.x = Math.PI / 2;
-  lens.position.set(0.004, 0.026, 0.0958);
+  lens.position.set(0.004, -0.01, 0.0248);
   lens.userData.keep = true;
-  lamp.add(lens);
+  camMod.add(lens);
   const redDot = new THREE.Mesh(new THREE.CircleGeometry(0.0016, 10), redDotMat);
-  redDot.position.set(0.004, 0.026, 0.0984);
+  redDot.position.set(0.004, -0.01, 0.0273);
   redDot.userData.keep = true;
-  lamp.add(redDot);
+  camMod.add(redDot);
   const amberDot = new THREE.Mesh(new THREE.CircleGeometry(0.0017, 10), amberDotMat);
-  amberDot.position.set(-0.02, 0.03, 0.0946);
+  amberDot.position.set(-0.026, -0.004, 0.0254);
   amberDot.userData.keep = true;
-  lamp.add(amberDot);
+  camMod.add(amberDot);
+  lamp.updateMatrixWorld(true);
+  const lensWorld = new THREE.Vector3(0.004, -0.01, 0.0275).applyMatrix4(camMod.matrixWorld);   // the door camera sits at the lens (world space: the groups above are unrotated)
+  const lensDir = new THREE.Vector3(0, -Math.sin(CAM_PITCH), Math.cos(CAM_PITCH));
 
   // what the lamp does to the corridor
   // a point light just in front of the panels, like the sconce it replaces: it washes the door,
@@ -344,7 +353,7 @@ export function buildGuardian(kit, world) {
   pad.add(osdPlane);
 
   const CAMS = {
-    door: { label: 'DOOR CAM', demo: false, cam: new THREE.PerspectiveCamera(98, 16 / 9, 0.05, 30), pos: [0.004, LAMP.y + 0.026, DOOR.zOut + 0.1], look: [0, 1.15, 8.6] },
+    door: { label: 'DOOR CAM', demo: false, cam: new THREE.PerspectiveCamera(98, 16 / 9, 0.05, 30), pos: lensWorld.toArray(), look: lensWorld.clone().addScaledVector(lensDir, 3).toArray() },
     room: { label: 'ROOM CAM', demo: true, cam: new THREE.PerspectiveCamera(84, 16 / 9, 0.05, 30), pos: [3.2, 2.98, 4.2], look: [-0.4, 0.95, -0.4] },
   };
   for (const c of Object.values(CAMS)) {

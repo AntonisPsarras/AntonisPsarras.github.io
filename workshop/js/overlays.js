@@ -9,7 +9,6 @@
 import { PROJECTS, AWARDS, SL_TERMINAL_LINES } from './content.js';
 import { buildDossier } from './dossiers.js';
 
-const SVG_NS = 'http://www.w3.org/2000/svg';
 const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 export class Overlays {
@@ -116,12 +115,6 @@ export class Overlays {
     gallery.scrollLeft = 0;
     this.slide = 0;
 
-    if (p.abstractGallery) {
-      gallery.appendChild(guardianPlate());
-      this.slideCount = 1;
-      ctrls.hidden = true;
-      return;
-    }
     this.slideCount = p.images.length;
     p.images.forEach((file, i) => {
       const wrap = document.createElement('div');
@@ -341,27 +334,4 @@ function termLine(line, text) {
   d.className = line.t === 'blank' ? 't-line t-line--blank' : `t-line t-line--${line.t}`;
   d.textContent = text;
   return d;
-}
-
-/* The Guardian dossier gets an abstract plate instead of installation photos. */
-function guardianPlate() {
-  const plate = document.createElement('div');
-  plate.className = 'ws-guardian-plate';
-  plate.setAttribute('role', 'listitem');
-  const svg = document.createElementNS(SVG_NS, 'svg');
-  svg.setAttribute('viewBox', '0 0 120 120');
-  svg.setAttribute('class', 'ws-guardian-rings');
-  svg.setAttribute('aria-hidden', 'true');
-  for (const [r, cls] of [[52, 'is-dim'], [38, ''], [24, 'is-dim'], [6, 'is-dot']]) {
-    const c = document.createElementNS(SVG_NS, 'circle');
-    c.setAttribute('cx', '60');
-    c.setAttribute('cy', '60');
-    c.setAttribute('r', String(r));
-    if (cls) c.setAttribute('class', cls);
-    svg.appendChild(c);
-  }
-  const label = document.createElement('p');
-  label.textContent = 'SYS_05 // GUARDIAN — No photographs in here. This door is fictional; photos of the real hardware live on the main portfolio.';
-  plate.append(svg, label);
-  return plate;
 }

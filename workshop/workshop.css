@@ -1037,36 +1037,6 @@ html:not(.ws-via-portal) .ws-arrive { display: none; }
 .ws-overlay .modal-card { max-height: min(88dvh, 88vh); }
 .ws-overlay .modal-body { user-select: text; -webkit-user-select: text; }
 
-/* Guardian: an abstract plate replaces installation photographs */
-.ws-guardian-plate {
-  flex: 0 0 100%;
-  min-height: 240px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1.1rem;
-  padding: 2rem 1.5rem;
-  background:
-    radial-gradient(circle at 50% 42%, rgba(255, 255, 255, 0.05), transparent 60%),
-    #060606;
-  text-align: center;
-}
-.ws-guardian-rings { width: 116px; height: 116px; }
-.ws-guardian-rings circle { fill: none; stroke: rgba(255, 255, 255, 0.55); stroke-width: 1; }
-.ws-guardian-rings circle.is-dim { stroke: rgba(255, 255, 255, 0.18); }
-.ws-guardian-rings circle.is-dot { fill: rgba(255, 255, 255, 0.85); stroke: none; }
-.ws-guardian-plate p {
-  margin: 0;
-  max-width: 22rem;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  line-height: 1.7;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-3);
-}
-
 /* Certificate viewer */
 .cert-card {
   width: min(96vw, 1180px);

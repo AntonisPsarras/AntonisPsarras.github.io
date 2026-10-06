@@ -38,10 +38,9 @@ export const PROJECTS = {
   },
   gs: {
     sys: 'SYS_05 // INTEGRATED', title: 'Guardian System', tagline: 'RFID Entry & Home Security',
-    /* No installation photographs inside the workshop: this door is fictional and
-       must never be visually paired with the real hardware. */
-    images: [], imageAlt: '', layout: 'side', side: 'right', abstractGallery: true,
-    links: [['GitHub', 'https://github.com/AntonisPsarras/guardian-system']],
+    images: ['Guardian1.jpg', 'Guardian2.jpg', 'Guardian3.jpg'],
+    imageAlt: 'Guardian System — installed interior portal, outdoor doorbell, and door lamp', layout: 'side', side: 'right',
+    links: [['GitHub', 'https://github.com/AntonisPsarras/guardian-system'], ['Print Files', 'https://makerworld.com/en/collections/36079462-guardian-system']],
   },
   lt: {
     sys: 'SYS_06 // INTEGRATED', title: 'LensTile', tagline: 'Magnetic Image Tiles for Modular Glasses Cases',
@@ -118,7 +117,7 @@ export const AWARD_IDS = Object.freeze(AWARDS.map((a) => a.id));
 export const LOCATIONS = [
   { id: 'overview',     label: 'Overview',          sys: 'LOC_00', summary: 'The whole workshop: certificates on the left wall, printers on the central bench, desks for electronics, code and physics on the right, the Aether orrery straight ahead.' },
   { id: 'achievements', label: 'Achievements',      sys: 'LOC_01', summary: 'The achievements wall: seven framed certificates from national physics and mathematics competitions, with personal details redacted.' },
-  { id: 'fabrication',  label: 'Printers',          sys: 'LOC_02', summary: 'The fabrication bench: a Bambu Lab P2S printing a LensTile and a Bambu Lab A1 printing a MoonCamp dome, with the filament, tools and parts bin around them.' },
+  { id: 'fabrication',  label: 'Printers',          sys: 'LOC_02', summary: 'The fabrication bench: an enclosed printer printing a LensTile and an open-frame printer printing a MoonCamp dome, with the filament, tools and parts bin around them.' },
   { id: 'electronics',  label: 'Electronics',       sys: 'LOC_03', summary: 'The electronics bench: soldering station, circuit board revisions, an oscilloscope, a multimeter and calipers.' },
   { id: 'programming',  label: 'Programming',       sys: 'LOC_04', summary: 'The programming desk: a monitor showing this room’s own source code, a second screen and the ScholiLink station.' },
   { id: 'physics',      label: 'Physics',           sys: 'LOC_05', summary: 'The physics corner: a chalkboard of orbital equations, a Bloch sphere, twin double pendulums and study notes.' },
@@ -166,12 +165,12 @@ export const HOTSPOTS = {
     body: ['Back to the portfolio.'],
   },
   'printer-enclosed': {
-    sys: 'FAB_01 // BAMBU LAB P2S', title: 'Bambu Lab P2S',
+    sys: 'FAB_01 // PRINTER', title: 'Enclosed 3D printer',
     body: ['The enclosed CoreXY printer. It is printing a LensTile — the 148 × 53 mm magnetic image tile — carrying the orbit art from Aether Gravity. Its spool hangs on the side holder.', '“I bought my first 3D printer a few years ago and soon fell in love with product design.”'],
     related: ['lt', 'ag'],
   },
   'printer-open': {
-    sys: 'FAB_02 // BAMBU LAB A1', title: 'Bambu Lab A1',
+    sys: 'FAB_02 // PRINTER', title: 'Open-frame 3D printer',
     body: ['The open-frame bed-slinger, slowly printing a MoonCamp habitat dome. The spool turns on its arm at the top left as the filament feeds.'],
     related: ['mc'],
   },

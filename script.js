@@ -835,6 +835,7 @@ function initWorkshopPortal() {
   /* One shared animation state; `dive` is 0 while idle and runs 0 → 1 during the jump. */
   const st = { flow: 0.37, angle: 0, dial: 0, dot: 0, text: 0, hover: 0, px: 0, py: 0, tx: 0, ty: 0, dive: 0 };
   let hovering = false, visible = true, raf = 0, last = 0, size = 0, dpr = 1, jumping = false;
+  let forced = false;           // docked: the portal is out of the hero, so scrolling can't gate it
 
   function drawPortal(g, W, H, cx, cy, h, s) {
     const dive = s.dive;
@@ -1059,6 +1060,7 @@ function initWorkshopPortal() {
   window.addEventListener('resize', fit);
   if ('IntersectionObserver' in window) {
     new IntersectionObserver((entries) => {
+      if (forced) return;
       visible = entries.some((en) => en.isIntersecting);
       if (visible) schedule(); else halt();
     }, { root: scrollRoot, threshold: 0.01 }).observe(root);
@@ -1073,6 +1075,7 @@ function initWorkshopPortal() {
 
   /* ── The jump ─────────────────────────────────────────────────────────── */
   let fx = null;
+  const gravity = document.getElementById('gravity-canvas');
 
   function jump(go) {
     if (jumping) return;
@@ -1081,6 +1084,10 @@ function initWorkshopPortal() {
     const rect = root.getBoundingClientRect();
     const cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2, h = rect.width / 2;
     const W = window.innerWidth, H = window.innerHeight;
+    if (gravity) {                                 // the orbits fall into the portal wherever it is
+      const gr = gravity.getBoundingClientRect();
+      gravity.style.transformOrigin = `${(cx - gr.left).toFixed(0)}px ${(cy - gr.top).toFixed(0)}px`;
+    }
     const fdpr = Math.min(window.devicePixelRatio || 1, 1.25);
     fx = document.createElement('canvas');
     fx.className = 'portal-fx';
@@ -1119,11 +1126,99 @@ function initWorkshopPortal() {
     if (fx) { fx.remove(); fx = null; }
     root.classList.remove('is-diving');
     document.body.classList.remove('is-portal-jump', 'is-entering-workshop');
+    if (gravity) gravity.style.transformOrigin = '';
     paint();
     schedule();
   }
 
-  return { jump, reset };
+  /* Docked (see initPortalDock): animate whenever it is open, not when the hero is in view. */
+  function setActive(on) {
+    forced = on !== null;
+    if (on === false) { visible = false; halt(); return; }
+    visible = true;
+    fit();
+    schedule();
+  }
+
+  return { jump, reset, root, setActive };
+}
+
+/* ==========================================================================
+   Portal dock — with a mouse on a wide screen the portal is not in the hero.
+   The orrery on the right edge is the way in: rest the cursor on it and it
+   charges, then gives way to the portal. A quick click still scrolls to a
+   section, so the dwell is what keeps a pass towards the scrollbar harmless.
+   Touch, narrow and no-hover visitors keep the portal in the hero's flow.
+   ========================================================================== */
+function initPortalDock(portal) {
+  const orrery = document.getElementById('orrery');
+  const el = portal.root;
+  if (!orrery || !el || !window.matchMedia) return;
+  const DWELL = 600, GRACE = 260;
+  const mq = window.matchMedia('(min-width: 1024px) and (hover: hover) and (pointer: fine)');
+  const home = document.createComment('workshop-portal');
+  let docked = false, open = false, overOrrery = false, overPortal = false, dwellT = 0, graceT = 0;
+
+  function setOpen(on) {
+    if (on === open) return;
+    open = on;
+    el.classList.toggle('is-open', on);
+    orrery.classList.toggle('is-hidden', on);
+    portal.setActive(on ? true : false);
+  }
+
+  function clearTimers() { clearTimeout(dwellT); clearTimeout(graceT); dwellT = graceT = 0; }
+
+  function settle() {
+    clearTimeout(graceT);
+    graceT = 0;
+    if (overOrrery || overPortal) return;
+    clearTimeout(dwellT);
+    dwellT = 0;
+    orrery.classList.remove('is-charging');
+    if (open) graceT = setTimeout(() => setOpen(false), GRACE);
+  }
+
+  orrery.addEventListener('pointerenter', (e) => {
+    if (!docked || e.pointerType !== 'mouse') return;
+    overOrrery = true;
+    clearTimeout(graceT);
+    if (open || dwellT) return;
+    orrery.style.setProperty('--dwell', `${DWELL}ms`);
+    orrery.classList.add('is-charging');
+    dwellT = setTimeout(() => { dwellT = 0; if (overOrrery) setOpen(true); }, DWELL);
+  });
+  orrery.addEventListener('pointerleave', () => { overOrrery = false; settle(); });
+  el.addEventListener('pointerenter', () => { overPortal = true; clearTimeout(graceT); });
+  el.addEventListener('pointerleave', () => { overPortal = false; settle(); });
+  orrery.addEventListener('click', () => { clearTimers(); orrery.classList.remove('is-charging'); });   // a click is navigation, not a dwell
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && open) { overOrrery = overPortal = false; setOpen(false); } });
+
+  function dock() {
+    if (docked) return;
+    docked = true;
+    document.documentElement.classList.add('portal-dock');
+    el.parentNode.insertBefore(home, el);
+    document.body.appendChild(el);
+    el.classList.add('is-dock');
+    portal.setActive(false);
+  }
+
+  function undock() {
+    if (!docked) return;
+    clearTimers();
+    open = overOrrery = overPortal = false;
+    docked = false;
+    orrery.classList.remove('is-hidden', 'is-charging');
+    el.classList.remove('is-dock', 'is-open');
+    document.documentElement.classList.remove('portal-dock');
+    if (home.parentNode) home.parentNode.insertBefore(el, home);
+    portal.setActive(null);
+  }
+
+  const apply = () => (mq.matches ? dock() : undock());
+  if (mq.addEventListener) mq.addEventListener('change', apply); else if (mq.addListener) mq.addListener(apply);
+  apply();
 }
 
 /* ==========================================================================
@@ -1138,6 +1233,7 @@ function initWorkshopEntry() {
   if (!links.length) return;
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
   const portal = initWorkshopPortal();
+  if (portal) initPortalDock(portal);
 
   links.forEach((link) => {
     link.addEventListener('click', (e) => {

@@ -1,7 +1,7 @@
 /* ==========================================================================
    fabrication.js — the central bench, its two printers and the filament.
 
-   The enclosed printer is a Bambu Lab P2S and the open one a Bambu Lab A1,
+   The enclosed printer is an enclosed CoreXY printer and the open one an open bed-slinger printer,
    modelled in printers.js from public specs and photos (no logos). The P2S
    prints a LensTile carrying Aether's orbit art; the A1 prints a MoonCamp
    dome. Prints grow with clipping planes, so the part really appears layer by
@@ -45,7 +45,7 @@ export function buildFabrication(kit, world) {
   world.addBox(BENCH.x - BENCH.w / 2 - 0.02, BENCH.x + BENCH.w / 2 + 0.02, BENCH.z - BENCH.d / 2 - 0.02, BENCH.z + BENCH.d / 2 + 0.02);
   world.addOccluder([BENCH.w, TOP, BENCH.d], [BENCH.x, TOP / 2, BENCH.z]);
 
-  /* ── Printer A: Bambu Lab P2S (enclosed CoreXY) ────────────────────── */
+  /* ── Printer A: enclosed CoreXY (enclosed CoreXY) ────────────────────── */
   const A = { x: -0.85, z: -0.32 };
   const clipA = new THREE.Plane(new THREE.Vector3(-1, 0, 0), 0);
   const p2s = buildP2S(kit, { artTex: tileArtTexture(kit, 'orbits'), clipPlane: clipA });
@@ -63,7 +63,7 @@ export function buildFabrication(kit, world) {
     view: [[A.x + 0.3, 1.42, 0.5], [A.x, TOP + 0.22, A.z]],
   });
 
-  /* ── Printer B: Bambu Lab A1 (open bed-slinger) ────────────────────── */
+  /* ── Printer B: open bed-slinger (open bed-slinger) ────────────────────── */
   const B = { x: 0.9, z: -0.32 };
   const clipB = new THREE.Plane(new THREE.Vector3(0, -1, 0), 0);
   const domeMat = M.pla.clone();
@@ -210,7 +210,7 @@ function cycle(t, period, pause) {
   return Math.min(1, local / period);
 }
 
-/* The P2S's 5″ display: a Bambu-like layout in plain mono type. */
+/* The P2S's 5″ display: a plain layout in plain mono type. */
 function drawScreenA(canvas, pct) {
   const c = canvas.getContext('2d');
   c.fillStyle = '#07080a';

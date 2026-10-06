@@ -12,8 +12,8 @@ the centre of the hero (Canvas 2D, no Three.js), which is still a plain link.
 
 - **The room is fictional; some of its objects are not.** The Guardian devices
   (door lamp with its camera, doorbell, interior portal) are modelled from the
-  photos of the real hardware, and the two printers from the real Bambu Lab P2S
-  and A1. The room around them is invented: never model a real home, floor
+  photos of the real hardware, and the two printers from real consumer 3D
+  printers. The room around them is invented: never model a real home, floor
   plan, window, wiring run, camera position or anything else about the real
   installation. Where the devices sit in the room is a design choice, not a
   record of where they are mounted.
@@ -22,8 +22,9 @@ the centre of the hero (Canvas 2D, no Three.js), which is still a plain link.
   panel, presence list and event log are demo data; the second ("room") camera
   is labelled a demo extra — the project has one camera, in the door lamp.
 - **No logos or lettering from real products.** The printers carry no brand
-  marks. Colours come from public specs: the A1's light grey (≈ `#C4C3C5`) with
-  dark-grey end pieces, the P2S's industrial grey with tinted glass and silver.
+  marks, and no label, card or caption in the room names a manufacturer or
+  model. The enclosed printer is industrial grey with tinted glass and silver;
+  the open-frame one is light grey (≈ `#C4C3C5`) with dark-grey end pieces.
 - **The host is a stand-in.** The avatar (`js/avatar.js`) is a low-poly figure
   with black medium-length hair; skin, hair and clothes are the constants in
   `C`. Copy calls it a stand-in, not a portrait.
@@ -35,8 +36,8 @@ the centre of the hero (Canvas 2D, no Three.js), which is still a plain link.
   is printed on the certificate.
 - **No HTML strings.** UI text uses `textContent` and `createElement`. Project
   dossiers are fetched from `../index.html` and rebuilt through an allowlist
-  sanitizer (`js/dossiers.js`). The Guardian dossier still shows an abstract
-  plate, not installation photos.
+  sanitizer (`js/dossiers.js`). The gallery beside each dossier loads the same
+  photos as the main portfolio (`../<file>`), the Guardian ones included.
 - **CSP.** `index.html` carries a strict policy: same-origin scripts, no inline
   scripts or style attributes, and only the two Google Fonts origins. JS may set
   styles through CSSOM (`el.style.x = …`), but never through `style=""`.

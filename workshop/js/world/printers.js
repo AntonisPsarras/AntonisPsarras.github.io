@@ -1,11 +1,11 @@
 /* ==========================================================================
    printers.js — the two printers on the central bench, and the filament.
 
-     Enclosed : a Bambu Lab P2S — an enclosed CoreXY box. Industrial-grey
+     Enclosed : an enclosed CoreXY printer — an enclosed CoreXY box. Industrial-grey
                 panels over a darker base, a tinted-glass door and top lid with
                 silver trim, a 5″ touchscreen at the front right, and the spool
                 on a bracket on its left side.
-     Open     : a Bambu Lab A1 — an open bed-slinger. Light-grey plastic
+     Open     : an open bed-slinger printer — an open bed-slinger. Light-grey plastic
                 (≈ #C4C3C5) with dark-grey end pieces, a black textured plate,
                 a small front-right touchscreen, and the spool on an arm at the
                 top left.
@@ -48,7 +48,7 @@ export function spool(kit, { color, parent, x = 0, y = 0, z = 0, axis = 'y', r =
   return outer;
 }
 
-/* ── Bambu Lab P2S — enclosed ───────────────────────────────────────────── */
+/* ── enclosed CoreXY — enclosed ───────────────────────────────────────────── */
 export function buildP2S(kit, { artTex, clipPlane }) {
   const M = kit.mat;
   const W = 0.386, D = 0.392, TOPH = 0.405, BASEH = 0.096;
@@ -60,13 +60,13 @@ export function buildP2S(kit, { artTex, clipPlane }) {
 
   for (const sx of [-1, 1]) for (const sz of [-1, 1]) kit.box(0.03, 0.008, 0.03, M.rubber, sx * (W / 2 - 0.03), 0.004, sz * (D / 2 - 0.03), pa);
   kit.box(W, BASEH - 0.008, D, base, 0, 0.008 + (BASEH - 0.008) / 2, 0, pa).castShadow = true;
-  kit.box(W + 0.002, 0.004, D + 0.002, lighter, 0, BASEH - 0.002, 0, pa);                    // the seam where base meets body
+  kit.box(W + 0.002, 0.006, D + 0.002, lighter, 0, BASEH, 0, pa);                            // the seam where base meets body (straddles the join, so no face is shared)
 
   const panelH = TOPH - BASEH, panelY = BASEH + panelH / 2;
-  kit.box(W - 0.024, panelH, 0.012, body, 0, panelY, -D / 2 + 0.006, pa).castShadow = true;
+  kit.box(W - 0.024, panelH, 0.012, body, 0, panelY, -D / 2 + 0.0066, pa).castShadow = true;      // 0.6 mm inside the rim's outer plane
   for (const sx of [-1, 1]) {
-    kit.box(0.012, panelH, D, body, sx * (W / 2 - 0.006), panelY, 0, pa).castShadow = true;
-    kit.box(0.0015, 0.2, D - 0.11, lighter, sx * (W / 2 + 0.0004), 0.255, 0, pa);          // a shallow raised panel on each side
+    kit.box(0.012, panelH, D - 0.002, body, sx * (W / 2 - 0.0066), panelY, 0, pa).castShadow = true;   // inset from the posts and rims on every outer plane
+    kit.box(0.0015, 0.2, D - 0.11, lighter, sx * (W / 2 + 0.0008), 0.255, 0, pa);          // a shallow raised panel on each side
   }
   for (const sx of [-1, 1]) kit.box(0.018, panelH, 0.018, trim, sx * (W / 2 - 0.009), panelY, D / 2 - 0.009, pa);
   kit.box(W - 0.05, 0.26, 0.004, lighter, 0, 0.23, -D / 2 + 0.014, pa);                      // lighter chamber back wall
@@ -76,11 +76,11 @@ export function buildP2S(kit, { artTex, clipPlane }) {
   for (const sx of [-1, 1]) kit.box(0.026, 0.02, D - 0.052, trim, sx * (W / 2 - 0.013), TOPH - 0.01, 0, pa);
   const lid = new THREE.Mesh(new THREE.PlaneGeometry(W - 0.026, D - 0.026), M.glassSmoked);
   lid.rotation.x = -Math.PI / 2;
-  lid.position.y = TOPH + 0.002;
+  lid.position.y = TOPH + 0.0015;
   pa.add(lid);
-  kit.box(W - 0.02, 0.003, 0.004, M.steelLight, 0, TOPH + 0.0035, D / 2 - 0.012, pa);
-  kit.box(W - 0.02, 0.003, 0.004, M.steelLight, 0, TOPH + 0.0035, -D / 2 + 0.012, pa);
-  for (const sx of [-1, 1]) kit.box(0.004, 0.003, D - 0.03, M.steelLight, sx * (W / 2 - 0.012), TOPH + 0.0035, 0, pa);
+  kit.box(W - 0.02, 0.004, 0.004, M.steelLight, 0, TOPH + 0.003, D / 2 - 0.012, pa);
+  kit.box(W - 0.02, 0.004, 0.004, M.steelLight, 0, TOPH + 0.003, -D / 2 + 0.012, pa);
+  for (const sx of [-1, 1]) kit.box(0.004, 0.004, D - 0.03, M.steelLight, sx * (W / 2 - 0.012), TOPH + 0.003, 0, pa);
   // tinted glass door with a thin frame and a silver handle
   const doorH = panelH - 0.022;
   const doorY = BASEH + doorH / 2;
@@ -108,7 +108,7 @@ export function buildP2S(kit, { artTex, clipPlane }) {
   const screenTex = kit.canvasTexture(screenCanvas);
   kit.box(0.126, 0.08, 0.007, M.blackGloss, 0.104, 0.054, D / 2 + 0.0035, pa);
   const screen = new THREE.Mesh(new THREE.PlaneGeometry(0.108, 0.0633), new THREE.MeshBasicMaterial({ map: screenTex, toneMapped: false, name: 'printerScreen' }));
-  screen.position.set(0.104, 0.054, D / 2 + 0.0075);
+  screen.position.set(0.104, 0.054, D / 2 + 0.0085);
   screen.userData.keep = true;
   pa.add(screen);
 
@@ -120,7 +120,7 @@ export function buildP2S(kit, { artTex, clipPlane }) {
   const artMat = new THREE.MeshStandardMaterial({ map: artTex, roughness: 0.55, clippingPlanes: [clipPlane], name: 'tileArt' });
   const art = new THREE.Mesh(new THREE.PlaneGeometry(0.148, 0.053), artMat);
   art.rotation.x = -Math.PI / 2;
-  art.position.y = 0.0122;
+  art.position.y = 0.0126;
   bed.add(art);
   bed.position.set(0, 0.17, 0);
   kit.bake(bed, { essential: false });
@@ -163,7 +163,7 @@ export function buildP2S(kit, { artTex, clipPlane }) {
   return { group: pa, W, D, H: TOPH + 0.01, bed, gantry, head, screenCanvas, screenTex, bedTop: 0.17 + 0.0135 };
 }
 
-/* ── Bambu Lab A1 — open bed-slinger ────────────────────────────────────── */
+/* ── open bed-slinger — open bed-slinger ────────────────────────────────────── */
 export function buildA1(kit, { clipPlane, domeMat }) {
   const M = kit.mat;
   const W = 0.385, D = 0.41;
@@ -186,7 +186,7 @@ export function buildA1(kit, { clipPlane, domeMat }) {
   scr.rotation.x = -0.55;
   kit.box(0.09, 0.06, 0.008, M.blackGloss, 0, 0, 0, scr);
   const screen = new THREE.Mesh(new THREE.PlaneGeometry(0.077, 0.0512), new THREE.MeshBasicMaterial({ map: screenTex, toneMapped: false, name: 'a1Screen' }));
-  screen.position.z = 0.0042;
+  screen.position.z = 0.0055;
   screen.userData.keep = true;
   scr.add(screen);
   pb.add(scr);
@@ -270,9 +270,10 @@ export function dryBox(kit, parent, x, top, z) {
   kit.box(W, 0.016, D, kit.tint(0xe4e2dd, 'satin'), 0, 0.008, 0, g);
   kit.box(W + 0.006, 0.014, D + 0.006, kit.tint(0xe4e2dd, 'satin'), 0, H + 0.007, 0, g);
   for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) kit.box(0.012, H, 0.012, kit.tint(0xcfcdc8, 'satin'), sx * (W / 2 - 0.006), 0.016 + H / 2, sz * (D / 2 - 0.006), g);
-  for (const [w, d, px, pz] of [[W, 0.003, 0, D / 2 - 0.0015], [W, 0.003, 0, -D / 2 + 0.0015], [0.003, D, W / 2 - 0.0015, 0], [0.003, D, -W / 2 + 0.0015, 0]]) {
-    const p = new THREE.Mesh(new THREE.BoxGeometry(w, H, d), M.glass);
-    p.position.set(px, 0.016 + H / 2, pz);
+  // panes sit 2 mm inside the posts' outer planes and clear of the base and lid plates, so no transparent face is coplanar with an opaque one
+  for (const [w, d, px, pz] of [[W - 0.02, 0.003, 0, D / 2 - 0.0035], [W - 0.02, 0.003, 0, -D / 2 + 0.0035], [0.003, D - 0.02, W / 2 - 0.0035, 0], [0.003, D - 0.02, -W / 2 + 0.0035, 0]]) {
+    const p = new THREE.Mesh(new THREE.BoxGeometry(w, H - 0.01, d), M.glass);
+    p.position.set(px, 0.018 + (H - 0.01) / 2, pz);
     g.add(p);
   }
   // hygrometer on the front, and two little rollers the spool turns on

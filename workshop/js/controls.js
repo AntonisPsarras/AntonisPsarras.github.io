@@ -198,6 +198,8 @@ export class Walker {
     this.vel = new THREE.Vector2();
     this.speed = 1.6;
     this.runSpeed = 2.5;
+    this.touchSpeed = 2.9;             // full push on the touch stick (it has no Shift)
+    this.tapSpeed = 2.1;               // walking to a tapped point
     this.turnSpeed = 1.7;
     this.radius = 0.32;
     this.eye = 1.62;
@@ -267,7 +269,8 @@ export class Walker {
     if (il > 1) { ix /= il; iz /= il; }
 
     const run = k.has('run') && il > 0.5;
-    const speed = run ? this.runSpeed : this.speed;
+    const analog = !!(this.axis.x || this.axis.y);
+    const speed = run ? this.runSpeed : analog ? this.touchSpeed : this.target ? this.tapSpeed : this.speed;
     this.vel.x = damp(this.vel.x, ix * speed, 9, dt);
     this.vel.y = damp(this.vel.y, iz * speed, 9, dt);
 

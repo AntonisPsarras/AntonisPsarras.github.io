@@ -6,7 +6,8 @@
    turns the view, and the stick captures its own pointer, so both thumbs work
    at once. The markup lives in index.html; this only binds behaviour.
    ========================================================================== */
-const DEAD = 0.14;
+const DEAD = 0.1;
+const BOOST = 1.2;      // the stick reaches full speed a little short of the rim
 
 export class TouchPad {
   constructor({ stick, thumb, act, onAxis, onAct }) {
@@ -49,7 +50,7 @@ export class TouchPad {
     this.thumb.style.transform = `translate(${(dx * reach).toFixed(1)}px, ${(dy * reach).toFixed(1)}px)`;
     const mag = Math.min(1, len);
     if (mag < DEAD) { this.onAxis(0, 0); return; }
-    const k = (mag - DEAD) / (1 - DEAD);
+    const k = Math.min(1, ((mag - DEAD) / (1 - DEAD)) * BOOST);
     this.onAxis((dx / (len || 1)) * k, (-dy / (len || 1)) * k);
   }
 

@@ -1618,6 +1618,10 @@ button, a { font: inherit; }
   .orrery-dot {
     transition: none;
   }
+
+  .hero-clue-arrow { animation: none; }
+  .workshop-portal.is-dock,
+  .workshop-portal.is-dock.is-open { transition: none; }
 }
 
 /* ==========================================================================
@@ -1875,36 +1879,6 @@ button, a { font: inherit; }
   .nav-workshop { display: inline-flex; }
 }
 
-.btn-text {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.9375rem 0.5rem;
-  color: var(--text-3);
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  text-decoration: none;
-  background-image: linear-gradient(currentColor, currentColor);
-  background-repeat: no-repeat;
-  background-size: 0 1px;
-  background-position: 0.5rem calc(100% - 0.7rem);
-  transition: color 0.25s ease, background-size 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.btn-text:hover,
-.btn-text:focus-visible {
-  color: var(--text-1);
-  background-size: calc(100% - 1rem) 1px;
-}
-
-.btn-text-arrow {
-  display: inline-block;
-  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.btn-text:hover .btn-text-arrow { transform: translateX(3px); }
 
 .workshop-veil {
   position: fixed;
@@ -1959,15 +1933,14 @@ body.is-portal-jump #gravity-canvas {
    the whole thing is still a plain link to /workshop/.
    ========================================================================== */
 .workshop-portal {
-  --portal: clamp(210px, 37vmin, 420px);
-  position: absolute;
-  left: 72%;
-  top: 50%;
+  --portal: clamp(160px, 46vw, 240px);
+  position: relative;
   z-index: 2;
   display: block;
   width: var(--portal);
   height: var(--portal);
-  transform: translate(-50%, -50%);
+  margin: 0.5rem auto 1.75rem;
+  flex-shrink: 0;
   border-radius: 50%;
   color: var(--text-1);
   text-decoration: none;
@@ -2046,24 +2019,86 @@ body.is-portal-jump .slide--hero .slide-content > * {
   transition-delay: 0s !important;
 }
 
-/* Wide screens: keep the copy clear of the portal and let the title breathe */
+/* Wide screens: the title breathes and the copy keeps to the left */
 @media (min-width: 900px) {
   .slide--hero .slide-content > * { max-width: min(46rem, 56%); }
   .slide--hero .hero-title { font-size: clamp(3rem, 6.2vw, 5.75rem); }
 }
 
-/* Narrow screens: the portal sits in the flow, under the buttons */
-@media (max-width: 899px) {
-  .workshop-portal {
-    --portal: clamp(160px, 46vw, 240px);
-    position: relative;
-    left: auto;
-    top: auto;
-    transform: none;
-    margin: 0.5rem auto 1.75rem;
-    flex-shrink: 0;
-  }
+/* Docked: with a mouse on a wide screen the portal is not in the hero at all. The
+   orrery on the right edge becomes the portal when the cursor rests on it
+   (script.js adds .portal-dock to <html> and moves the link to <body>). */
+.workshop-portal.is-dock {
+  --portal: clamp(230px, 30vmin, 310px);
+  position: fixed;
+  z-index: 21;
+  top: 50%;
+  right: 1rem;
+  left: auto;
+  margin: 0;
+  transform: translateY(-50%) scale(0.35);
+  transform-origin: 82% 50%;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s ease, visibility 0s linear 0.55s;
 }
+
+.workshop-portal.is-dock.is-open {
+  transform: translateY(-50%) scale(1);
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s ease, visibility 0s;
+}
+
+.workshop-portal.is-dock.is-diving { visibility: hidden; transition: none; }
+
+/* the orrery steps aside while the portal is out, and charges as the cursor rests on it */
+.orrery { transition: opacity 0.3s ease, transform 0.45s cubic-bezier(0.22, 1, 0.36, 1); }
+.portal-dock .orrery.is-hidden { opacity: 0; pointer-events: none; transform: translateY(-50%) scale(0.7); }
+
+.orrery-charge {
+  stroke-opacity: 0;
+  stroke-dasharray: 396;
+  stroke-dashoffset: 396;
+  transform: rotate(-90deg);
+  transition: stroke-opacity 0.25s ease, stroke-dashoffset 0s linear 0.25s;
+}
+
+.portal-dock .orrery.is-charging .orrery-charge {
+  stroke-opacity: 0.7;
+  stroke-dashoffset: 0;
+  transition: stroke-opacity 0.2s ease, stroke-dashoffset var(--dwell, 600ms) linear;
+}
+
+/* The hero's clue to the portal */
+.hero-clue {
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  padding: 0.9375rem 0.5rem;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1.5;
+}
+
+.hero-clue-dock { display: none; }
+.portal-dock .hero-clue-dock { display: inline; }
+.portal-dock .hero-clue-flow { display: none; }
+
+.hero-clue-arrow {
+  display: inline-block;
+  animation: clue-nudge 2.4s ease-in-out infinite;
+}
+
+.hero-clue-arrow--up { animation-name: clue-nudge-up; }
+
+@keyframes clue-nudge { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(5px); } }
+@keyframes clue-nudge-up { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
 
 @media (prefers-reduced-motion: reduce) {
   .workshop-veil,
@@ -2072,8 +2107,6 @@ body.is-portal-jump .slide--hero .slide-content > * {
   .workshop-portal,
   .portal-caption,
   .portal-caption-arrow,
-  .btn-text,
-  .btn-text-arrow { transition: none; }
 }
 
 

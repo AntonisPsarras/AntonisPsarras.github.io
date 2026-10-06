@@ -107,7 +107,7 @@ class App {
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x050506);
     this.scene.fog = new THREE.Fog(0x050506, 9, 24);
-    this.camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.05, 40);
+    this.camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 40);
     this.rig = new CameraRig(this.camera);
     this.rig.setPose(...ENTRY_POSE);
     s1.done(this.tier.label.toUpperCase());
