@@ -440,6 +440,33 @@ button, a { font: inherit; }
   display: none;
 }
 
+.nav-links {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nav-workshop {
+  display: none;
+  padding: 0.5rem 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text-3);
+  text-decoration: none;
+  transition: color 0.25s ease;
+}
+
+.nav-workshop:link,
+.nav-workshop:visited { color: var(--text-3); }
+.nav-workshop:hover { color: var(--text-1); }
+
+@media (min-width: 640px) {
+  .nav-workshop { display: inline-flex; }
+}
+
 .nav-github {
   display: inline-flex;
   align-items: center;
@@ -454,6 +481,9 @@ button, a { font: inherit; }
   border: 1px solid var(--border-dim);
   transition: color 0.25s ease, border-color 0.25s ease;
 }
+
+.nav-github:link,
+.nav-github:visited { color: var(--text-3); }
 
 .nav-github:hover {
   color: var(--text-1);
@@ -1855,31 +1885,6 @@ button, a { font: inherit; }
    Workshop entrance — a quiet secondary CTA and a short transition.
    The workshop itself (Three.js) only loads on /workshop/.
    ========================================================================== */
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.nav-workshop {
-  display: none;
-  padding: 0.5rem 0.75rem;
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: var(--text-3);
-  text-decoration: none;
-  transition: color 0.25s ease;
-}
-
-.nav-workshop:hover { color: var(--text-1); }
-
-@media (min-width: 640px) {
-  .nav-workshop { display: inline-flex; }
-}
-
-
 .workshop-veil {
   position: fixed;
   inset: 0;
@@ -1951,6 +1956,21 @@ body.is-portal-jump #gravity-canvas {
 }
 
 .slide--hero.is-in-view .workshop-portal { opacity: 1; }
+
+/* Wide screens show the orrery as section nav. Keep the portal out of the
+   hero flow even before JS docks it, or when hover/pointer media fails. */
+@media (min-width: 1024px) {
+  .slide--hero .workshop-portal:not(.is-dock) {
+    position: absolute;
+    width: 0;
+    height: 0;
+    margin: 0;
+    overflow: hidden;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
 
 /* No-JS look, and the surface under the canvas */
 .workshop-portal::before {
@@ -2087,8 +2107,12 @@ body.is-portal-jump .slide--hero .slide-content > * {
 }
 
 .hero-clue-dock { display: none; }
-.portal-dock .hero-clue-dock { display: inline; }
-.portal-dock .hero-clue-flow { display: none; }
+.hero-clue-flow { display: inline; }
+
+@media (min-width: 1024px) {
+  .hero-clue-dock { display: inline; }
+  .hero-clue-flow { display: none; }
+}
 
 .hero-clue-arrow {
   display: inline-block;

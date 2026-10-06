@@ -1162,18 +1162,20 @@ function initWorkshopPortal() {
 }
 
 /* ==========================================================================
-   Portal dock — with a mouse on a wide screen the portal is not in the hero.
+   Portal dock — on a wide screen the portal is not in the hero.
    The orrery on the right edge is the way in: rest the cursor on it and it
    charges, then gives way to the portal. A quick click still scrolls to a
    section, so the dwell is what keeps a pass towards the scrollbar harmless.
-   Touch, narrow and no-hover visitors keep the portal in the hero's flow.
+   Narrow viewports keep the portal in the hero's flow.
    ========================================================================== */
 function initPortalDock(portal) {
   const orrery = document.getElementById('orrery');
   const el = portal.root;
   if (!orrery || !el || !window.matchMedia) return;
   const DWELL = 600, GRACE = 260;
-  const mq = window.matchMedia('(min-width: 1024px) and (hover: hover) and (pointer: fine)');
+  /* Dock whenever the desktop orrery is shown. Requiring hover/pointer left
+     the portal in the hero on Windows touch laptops and broke the section nav. */
+  const mq = window.matchMedia('(min-width: 1024px)');
   const home = document.createComment('workshop-portal');
   let docked = false, open = false, overOrrery = false, overPortal = false, dwellT = 0, graceT = 0;
 
