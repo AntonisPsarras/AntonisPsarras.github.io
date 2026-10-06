@@ -34,6 +34,24 @@ function initSmoothScroll() {
   });
 }
 
+/* The page scrolls .scroll-container, not the window, so a hash like
+   #projects-sec (from the workshop, or a shared URL) has to be applied here. */
+function initHashScroll() {
+  const container = document.querySelector('.scroll-container');
+  if (!container) return;
+
+  function go(behavior) {
+    const id = location.hash.slice(1);
+    if (!id) return;
+    const el = document.getElementById(id);
+    if (!el) return;
+    container.scrollTo({ top: el.offsetTop, behavior });
+  }
+
+  go('auto');
+  window.addEventListener('hashchange', () => go('smooth'));
+}
+
 /* ==========================================================================
    Terminal sequence — real architecture data from ScholiLink repo
    cmd  lines type at 13 ms/char (human key-by-key feel)
@@ -1268,6 +1286,7 @@ function initWorkshopEntry() {
 document.addEventListener('DOMContentLoaded', () => {
   injectIcons();
   initSmoothScroll();
+  initHashScroll();
   const terminal = initTerminal();
   initProjectInspect(terminal);
   initScrollReveal();

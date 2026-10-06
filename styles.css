@@ -2106,7 +2106,10 @@ body.is-portal-jump .slide--hero .slide-content > * {
   #gravity-canvas,
   .workshop-portal,
   .portal-caption,
-  .portal-caption-arrow,
+  .portal-caption-arrow {
+    animation: none;
+    transition: none;
+  }
 }
 
 

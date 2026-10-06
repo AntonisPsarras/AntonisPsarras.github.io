@@ -129,7 +129,7 @@ class App {
     const s3 = ui.loaderStep(3, 'LOADING PROJECT OBJECTS');
     const manager = new THREE.LoadingManager();
     manager.onProgress = (_url, loaded, total) => s3.progress(`${loaded}/${total}`);
-    const certs = await Promise.race([this.world.shared.loadCertificates(manager), sleep(9000).then(() => [])]);
+    const certs = await this.world.shared.loadCertificates(manager);
     preloadDossiers();
     const ok = certs.filter(Boolean).length;
     if (ok < AWARDS.length) s3.done(`${ok}/${AWARDS.length}`); else s3.done('OK');
@@ -335,7 +335,7 @@ class App {
     this.ui.showEntry(false);
     this.ui.showSkip(false);
     this.ui.setAskVisible(true);
-    this.ui.showChooser(true, this.touch ? 'guided' : 'guided');
+    this.ui.showChooser(true, this.touch ? 'guided' : 'explore');
     if (direct) this.dialogue.say(DIALOGUE.direct, { priority: PRIORITY.SCRIPT });
   }
 
@@ -430,7 +430,6 @@ class App {
     }
     if (hs.kind === 'host') { this.ui.setAskOpen(true); return; }
     if (id === 'doorbell') this.ring();           // press it, then look closer: the card has the bell and the story
-    if (id === 'exit-door') { this.showCard(hs); this.state = 'inspect'; this.inspectId = id; return; }
     if (id === 'light-switch' && this.mode === 'explore') { this.toggleNight(); return; }
 
     if (this.state !== 'inspect') {
@@ -567,7 +566,7 @@ class App {
       case 'pendulum':
         ctl('release', 'Release again', () => { S.pendulum.release(); this.sound.play('tick'); });
         if (this.reduced) spec.body = [...spec.body, 'Animation is paused because reduced motion is on. Use “Play animations” in Help to run it.'];
-        else if (this.tier.detail === 0) spec.body = [...spec.body, 'Paused on the Low quality setting to keep things smooth. Choose Medium or High in Help to run it.'];
+        else if (this.tier.detail === 0) spec.body = [...spec.body, 'Paused on the Low quality setting to keep things smooth. Geometry is chosen when the room loads, so pick Medium or High and refresh to run it.'];
         break;
       case 'aether':
         ctl('hill', 'Hill spheres', (b) => { S.orrery.setHill(!S.orrery.hill); this.ui.updateControl('hill', { pressed: S.orrery.hill }); }, S.orrery.hill);
@@ -742,7 +741,7 @@ class App {
     const r = this.renderer;
     r.setPixelRatio(Math.min(window.devicePixelRatio || 1, t.dpr));
     r.setSize(window.innerWidth, window.innerHeight, false);
-    this.setShadows(t.shadows && this.tier.shadows);
+    this.setShadows(t.shadows);
     this.activeTier = name;
   }
 

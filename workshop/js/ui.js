@@ -129,7 +129,7 @@ export class UI {
     document.querySelectorAll('#ws-quality [data-quality]').forEach((b) => {
       b.setAttribute('aria-pressed', String(b.dataset.quality === choice));
     });
-    $('ws-quality-note').textContent = `Running at ${active}. Auto picks a level from coarse hints on this device; nothing is stored or sent.`;
+    $('ws-quality-note').textContent = `Running at ${active}. This changes resolution and shadows; room detail is chosen when the page loads. Auto picks a level from coarse hints on this device; nothing is stored or sent.`;
   }
 
   setMotion(reduced, systemReduced) {
@@ -403,12 +403,17 @@ export class UI {
   /* ── Explore targeting ──────────────────────────────────────────────── */
   setTarget(label, x, y) {
     if (!label) { this.target.classList.remove('is-on'); this.reticle.classList.remove('is-hot'); return; }
-    if (this.target.dataset.label !== label) {
-      this.target.dataset.label = label;
+    const touchPad = this.app.dataset.tc === 'true';
+    const key = touchPad ? `${label}|tc` : label;
+    if (this.target.dataset.label !== key) {
+      this.target.dataset.label = key;
       this.target.replaceChildren();
-      const k = document.createElement('kbd');
-      k.textContent = 'E';
-      this.target.append(document.createTextNode(`${label}  `), k);
+      this.target.append(document.createTextNode(label));
+      if (!touchPad) {
+        const k = document.createElement('kbd');
+        k.textContent = 'E';
+        this.target.append(document.createTextNode('  '), k);
+      }
     }
     this.target.style.transform = `translate(${Math.round(x + 14)}px, ${Math.round(y + 12)}px)`;
     this.target.classList.add('is-on');
