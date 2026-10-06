@@ -1093,52 +1093,74 @@ function initWorkshopPortal() {
 
   /* ── The jump ─────────────────────────────────────────────────────────── */
   let fx = null;
+  let jumpWatchdog = 0;
+  let jumpDone = true;
   const gravity = document.getElementById('gravity-canvas');
 
   function jump(go) {
     if (jumping) return;
     jumping = true;
+    jumpDone = false;
     halt();
-    const rect = root.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2, h = rect.width / 2;
-    const W = window.innerWidth, H = window.innerHeight;
-    if (gravity) {                                 // the orbits fall into the portal wherever it is
-      const gr = gravity.getBoundingClientRect();
-      gravity.style.transformOrigin = `${(cx - gr.left).toFixed(0)}px ${(cy - gr.top).toFixed(0)}px`;
-    }
-    const fdpr = Math.min(window.devicePixelRatio || 1, 1.25);
-    fx = document.createElement('canvas');
-    fx.className = 'portal-fx';
-    fx.setAttribute('aria-hidden', 'true');
-    fx.width = Math.round(W * fdpr);
-    fx.height = Math.round(H * fdpr);
-    document.body.appendChild(fx);
-    const g = fx.getContext('2d');
-    g.setTransform(fdpr, 0, 0, fdpr, 0, 0);
-    drawPortal(g, W, H, cx, cy, h, st);          // the first frame matches the small portal exactly
-    root.classList.add('is-diving');
-    document.body.classList.add('is-portal-jump');
 
     const DUR = 1150;
-    const t0 = performance.now();
-    let veil = false, last2 = t0;
-    function step(now) {
-      const k = Math.min(1, (now - t0) / DUR);
-      const dt = Math.min(0.05, (now - last2) / 1000);
-      last2 = now;
-      st.dive = Math.pow(k, 2.2);
-      advance(dt, 1 + 14 * st.dive * st.dive);
-      drawPortal(g, W, H, cx, cy, h, st);
-      if (k > 0.78 && !veil) { veil = true; document.body.classList.add('is-entering-workshop'); }
-      if (k < 1) { requestAnimationFrame(step); return; }
-      setTimeout(go, 380);
+    const finish = () => {
+      if (jumpDone) return;
+      jumpDone = true;
+      clearTimeout(jumpWatchdog);
+      jumpWatchdog = 0;
+      go();
+    };
+    jumpWatchdog = setTimeout(finish, DUR + 500);
+
+    try {
+      const rect = root.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2, h = rect.width / 2;
+      const W = window.innerWidth, H = window.innerHeight;
+      if (gravity) {                                 // the orbits fall into the portal wherever it is
+        const gr = gravity.getBoundingClientRect();
+        gravity.style.transformOrigin = `${(cx - gr.left).toFixed(0)}px ${(cy - gr.top).toFixed(0)}px`;
+      }
+      const fdpr = Math.min(window.devicePixelRatio || 1, 1.25);
+      fx = document.createElement('canvas');
+      fx.className = 'portal-fx';
+      fx.setAttribute('aria-hidden', 'true');
+      fx.width = Math.round(W * fdpr);
+      fx.height = Math.round(H * fdpr);
+      document.body.appendChild(fx);
+      const g = fx.getContext('2d');
+      if (!g) throw new Error('portal-fx');
+      g.setTransform(fdpr, 0, 0, fdpr, 0, 0);
+      drawPortal(g, W, H, cx, cy, h, st);          // the first frame matches the small portal exactly
+      root.classList.add('is-diving');
+      document.body.classList.add('is-portal-jump');
+
+      const t0 = performance.now();
+      let veil = false, last2 = t0;
+      function step(now) {
+        if (jumpDone) return;
+        const k = Math.min(1, (now - t0) / DUR);
+        const dt = Math.min(0.05, (now - last2) / 1000);
+        last2 = now;
+        st.dive = Math.pow(k, 2.2);
+        advance(dt, 1 + 14 * st.dive * st.dive);
+        drawPortal(g, W, H, cx, cy, h, st);
+        if (k > 0.78 && !veil) { veil = true; document.body.classList.add('is-entering-workshop'); }
+        if (k < 1) { requestAnimationFrame(step); return; }
+        setTimeout(finish, 380);
+      }
+      requestAnimationFrame(step);
+    } catch {
+      finish();
     }
-    requestAnimationFrame(step);
   }
 
   /* Back/forward cache: come back to a calm page, not the middle of a jump. */
   function reset() {
     if (!jumping && !fx) return;
+    jumpDone = true;
+    clearTimeout(jumpWatchdog);
+    jumpWatchdog = 0;
     jumping = false;
     st.dive = 0;
     if (fx) { fx.remove(); fx = null; }
@@ -1245,6 +1267,8 @@ function initPortalDock(portal) {
    Workshop entrance — every "Workshop" link on the page jumps through the
    portal, then navigates. They are plain links underneath: new-tab / modified
    clicks behave normally, and reduced-motion visitors go straight there.
+   Touch / coarse pointers skip the dive and assign in the same tap: delaying
+   location after preventDefault strands mobile Safari on a faded hero.
    The Workshop only checks ?via=portal to play a short arrival flourish.
    Nothing is preloaded here.
    ========================================================================== */
@@ -1252,6 +1276,7 @@ function initWorkshopEntry() {
   const links = document.querySelectorAll('[data-workshop-entry]');
   if (!links.length) return;
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const cinematic = window.matchMedia('(hover: hover) and (pointer: fine)');
   const portal = initWorkshopPortal();
   if (portal) initPortalDock(portal);
 
@@ -1261,16 +1286,16 @@ function initWorkshopEntry() {
       e.preventDefault();
       const url = new URL(link.href, window.location.href);
       if (reduce.matches) {
-        window.location.href = url.href;
+        window.location.assign(url.href);
         return;
       }
-      if (portal) {
+      if (portal && cinematic.matches) {
         url.searchParams.set('via', 'portal');
-        portal.jump(() => { window.location.href = url.href; });
+        portal.jump(() => { window.location.assign(url.href); });
         return;
       }
-      document.body.classList.add('is-entering-workshop');
-      setTimeout(() => { window.location.href = url.href; }, 680);
+      if (portal) url.searchParams.set('via', 'portal');
+      window.location.assign(url.href);
     });
   });
 
