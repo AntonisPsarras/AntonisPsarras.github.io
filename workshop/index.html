@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <!-- Strict policy: only same-origin scripts, no inline code, no third-party
+       requests except the two font origins the portfolio already uses. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self'; connect-src 'self'; media-src 'none'; object-src 'none'; base-uri 'self'; form-action 'none'; frame-src 'none'; worker-src 'none'; manifest-src 'none'" />
+  <meta name="referrer" content="no-referrer" />
+  <meta name="color-scheme" content="dark" />
+  <title>The Workshop // Anthony (Antonis) Psarras</title>
+  <meta name="description" content="An optional, fictional 3D workshop built from the projects of Anthony (Antonis) Psarras — software, electronics, 3D printing and physics." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Geist:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../styles.css" />
+  <link rel="stylesheet" href="workshop.css" />
+  <script src="js/boot.js"></script>
+  <script type="module" src="js/main.js"></script>
+</head>
+<body>
+  <a class="ws-skip ws-skip--text" href="?view=text">Skip to the text version</a>
+  <a class="ws-skip ws-skip--3d" href="./">Open the 3D workshop</a>
+
+  <!-- ======================================================================
+       3D experience — shown only when boot.js finds JavaScript + WebGL2.
+  ======================================================================= -->
+  <div id="ws-app" class="ws-app">
+    <canvas id="ws-canvas" class="ws-canvas" aria-hidden="true"></canvas>
+    <div id="ws-markers" class="ws-markers" aria-hidden="true"></div>
+    <div id="ws-labels" class="ws-labels" aria-hidden="true"></div>
+    <div id="ws-reticle" class="ws-reticle" aria-hidden="true"></div>
+    <div id="ws-target" class="ws-target" aria-hidden="true"></div>
+
+    <div id="ws-bubble" class="ws-bubble" hidden>
+      <span class="ws-bubble-name">ANTONIS //</span>
+      <p id="ws-bubble-text" class="ws-bubble-text"></p>
+      <button type="button" id="ws-bubble-next" class="ws-bubble-next">Next <span aria-hidden="true">›</span></button>
+    </div>
+
+    <header class="ws-bar">
+      <a class="ws-back" href="../" data-exit>
+        <span aria-hidden="true">←</span> <span class="ws-btn-label">Portfolio</span>
+      </a>
+      <p class="ws-brand"><span class="ws-brand-name">The Workshop</span><span class="ws-brand-sep" aria-hidden="true">//</span><span class="ws-brand-sys">SYS_00</span></p>
+      <div class="ws-bar-controls">
+        <div class="ws-mode" role="group" aria-label="Navigation mode">
+          <button type="button" id="ws-mode-guided" class="ws-chipbtn" aria-pressed="true">Guided</button>
+          <button type="button" id="ws-mode-explore" class="ws-chipbtn" aria-pressed="false">Explore</button>
+        </div>
+        <button type="button" id="ws-lights" class="ws-chipbtn" aria-pressed="false" title="Night mode (L)">
+          <svg class="ws-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>
+          <span class="ws-btn-label">Night</span>
+        </button>
+        <button type="button" id="ws-sound" class="ws-chipbtn" aria-pressed="false" title="Sound (M)">
+          <svg class="ws-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path class="ws-ico-wave" d="M15.5 8.5a5 5 0 0 1 0 7"/><path class="ws-ico-mute" d="m16 9 5 6m0-6-5 6"/></svg>
+          <span class="ws-btn-label" id="ws-sound-label">Sound off</span>
+        </button>
+        <button type="button" id="ws-help" class="ws-chipbtn ws-chipbtn--icon" aria-haspopup="dialog" title="Help (?)">
+          <span aria-hidden="true">?</span><span class="visually-hidden">Controls and help</span>
+        </button>
+      </div>
+    </header>
+
+    <nav id="ws-guide" class="ws-guide" aria-label="Workshop locations">
+      <div class="ws-guide-head">
+        <p class="ws-guide-label">LOCATIONS</p>
+        <div class="ws-guide-step">
+          <button type="button" id="ws-prev-loc" class="ws-iconbtn" aria-label="Previous location"><span aria-hidden="true">‹</span></button>
+          <button type="button" id="ws-next-loc" class="ws-iconbtn" aria-label="Next location"><span aria-hidden="true">›</span></button>
+        </div>
+      </div>
+      <ol id="ws-locations" class="ws-locations"></ol>
+      <div class="ws-objects-wrap">
+        <p class="ws-guide-label" id="ws-objects-label">OBJECTS HERE</p>
+        <ul id="ws-objects" class="ws-objects" aria-labelledby="ws-objects-label"></ul>
+      </div>
+    </nav>
+
+    <aside id="ws-card" class="ws-card" aria-labelledby="ws-card-title" hidden>
+      <div class="ws-card-head">
+        <p id="ws-card-sys" class="ws-card-sys"></p>
+        <button type="button" id="ws-card-back" class="ws-card-back">
+          <span aria-hidden="true">‹</span> Back
+        </button>
+      </div>
+      <h2 id="ws-card-title" class="ws-card-title" tabindex="-1"></h2>
+      <div id="ws-card-body" class="ws-card-body"></div>
+      <div id="ws-card-controls" class="ws-card-controls"></div>
+      <div id="ws-card-actions" class="ws-card-actions"></div>
+      <div class="ws-card-step">
+        <button type="button" id="ws-card-prev" class="ws-textbtn"><span aria-hidden="true">‹</span> Previous</button>
+        <button type="button" id="ws-card-next" class="ws-textbtn">Next <span aria-hidden="true">›</span></button>
+      </div>
+    </aside>
+
+    <div id="ws-explore-hint" class="ws-explore-hint" hidden>
+      <p class="ws-explore-keys">
+        <span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move</span>
+        <span><kbd>←</kbd><kbd>→</kbd> turn</span>
+        <span>drag to look</span>
+        <span>click floor to walk</span>
+        <span><kbd>E</kbd> inspect</span>
+      </p>
+      <button type="button" id="ws-lock" class="ws-chipbtn">Lock mouse <span class="ws-dim">(Esc releases)</span></button>
+    </div>
+
+    <div class="ws-ask-wrap">
+      <div id="ws-ask-menu" class="ws-ask-menu" hidden>
+        <p class="ws-guide-label">ASK ANTONIS</p>
+        <ul id="ws-ask-list" class="ws-ask-list"></ul>
+      </div>
+      <button type="button" id="ws-ask" class="ws-ask" aria-expanded="false" aria-controls="ws-ask-menu" hidden>
+        Ask Antonis
+      </button>
+    </div>
+
+    <!-- Arrival: outside the door -->
+    <section id="ws-entry" class="ws-entry" aria-labelledby="ws-entry-title" hidden>
+      <p class="ws-entry-sys">SYS_00 // WORKSHOP</p>
+      <h1 id="ws-entry-title" class="ws-entry-title">The Workshop</h1>
+      <p class="ws-entry-copy">A fictional room, built from the things I work on.</p>
+      <div class="ws-entry-actions">
+        <button type="button" id="ws-ring" class="btn-primary">Ring doorbell</button>
+        <button type="button" id="ws-direct" class="btn-outline">Enter directly</button>
+      </div>
+      <p class="ws-entry-foot"><a href="?view=text">Text version</a><span aria-hidden="true">//</span><a href="../" data-exit>Back to portfolio</a></p>
+    </section>
+
+    <button type="button" id="ws-skip-intro" class="ws-skip-intro ws-chipbtn" hidden>Skip intro <span aria-hidden="true">›</span></button>
+
+    <section id="ws-chooser" class="ws-chooser" aria-labelledby="ws-chooser-title" hidden>
+      <h2 id="ws-chooser-title" class="ws-chooser-title">How would you like to look around?</h2>
+      <div class="ws-chooser-options">
+        <button type="button" id="ws-choose-guided" class="ws-choice">
+          <span class="ws-choice-name">Guided</span>
+          <span class="ws-choice-desc">Jump between locations. Tap or click objects.</span>
+        </button>
+        <button type="button" id="ws-choose-explore" class="ws-choice">
+          <span class="ws-choice-name">Explore</span>
+          <span class="ws-choice-desc">Walk with WASD, look by dragging, inspect with E.</span>
+        </button>
+      </div>
+    </section>
+
+    <p id="ws-live" class="visually-hidden" aria-live="polite"></p>
+    <p id="ws-toast" class="ws-toast" role="status"></p>
+    <pre id="ws-diag" class="ws-diag" hidden></pre>
+  </div>
+
+  <div id="ws-loader" class="ws-loader" role="status" aria-live="polite">
+    <div class="ws-loader-inner">
+      <p class="ws-loader-title">LOG_ENTRY // WORKSHOP</p>
+      <ol id="ws-loader-lines" class="ws-loader-lines"></ol>
+    </div>
+  </div>
+
+  <div id="ws-fade" class="ws-fade" aria-hidden="true"><span id="ws-fade-label">LOG_ENTRY // 00</span></div>
+
+  <!-- ======================================================================
+       Project modal — same shell and classes as the portfolio's modal.
+       Content is rebuilt from ../index.html by dossiers.js (sanitized).
+  ======================================================================= -->
+  <div id="project-modal" class="modal-overlay ws-overlay" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Project details">
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-card">
+      <div class="modal-top">
+        <div class="modal-image-gallery" id="modal-gallery" role="list" aria-label="Project screenshots"></div>
+        <div class="carousel-controls" id="carousel-controls" hidden>
+          <button type="button" class="carousel-nav carousel-nav--prev" id="carousel-prev" aria-label="Previous image"><span aria-hidden="true">‹</span></button>
+          <div class="carousel-dots" id="carousel-dots" role="tablist" aria-label="Gallery slides"></div>
+          <button type="button" class="carousel-nav carousel-nav--next" id="carousel-next" aria-label="Next image"><span aria-hidden="true">›</span></button>
+        </div>
+        <button type="button" class="modal-close-btn" data-close aria-label="Close project details">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+    </div>
+  </div>
+
+  <!-- Certificate viewer -->
+  <div id="cert-viewer" class="modal-overlay ws-overlay cert-overlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="cert-title">
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-card cert-card">
+      <div id="cert-stage" class="cert-stage">
+        <img id="cert-img" class="cert-img" alt="" decoding="async" />
+        <p id="cert-missing" class="cert-missing" hidden>Image unavailable.</p>
+      </div>
+      <div class="cert-meta">
+        <p id="cert-sys" class="modal-sys-id"></p>
+        <h2 id="cert-title" class="modal-title cert-title"></h2>
+        <p id="cert-issuer" class="modal-tagline"></p>
+        <p id="cert-original" class="cert-original" lang="el"></p>
+        <p class="cert-note">Personal details on this certificate have been redacted.</p>
+        <div class="cert-actions">
+          <button type="button" id="cert-prev" class="card-link"><span aria-hidden="true">‹</span> Previous</button>
+          <button type="button" id="cert-zoom" class="card-link" aria-pressed="false">Zoom</button>
+          <button type="button" id="cert-next" class="card-link">Next <span aria-hidden="true">›</span></button>
+        </div>
+      </div>
+      <button type="button" class="modal-close-btn" data-close aria-label="Close certificate">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Help -->
+  <div id="ws-help-panel" class="modal-overlay ws-overlay help-overlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="help-title">
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-card help-card">
+      <div class="modal-body">
+        <p class="modal-sys-id">SYS_00 // CONTROLS</p>
+        <h2 id="help-title" class="modal-title">Getting around</h2>
+        <div class="help-grid">
+          <section>
+            <p class="details-block-label">// GUIDED</p>
+            <ul class="help-list">
+              <li>Choose a location from the list, or use <kbd>‹</kbd> <kbd>›</kbd>.</li>
+              <li>Click or tap an object (or its button in the list) to inspect it.</li>
+              <li>Drag to look around a little.</li>
+            </ul>
+          </section>
+          <section>
+            <p class="details-block-label">// EXPLORE</p>
+            <ul class="help-list">
+              <li><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or <kbd>↑</kbd><kbd>↓</kbd> to move, <kbd>←</kbd><kbd>→</kbd> to turn.</li>
+              <li>Drag to look, or lock the mouse; <kbd>Esc</kbd> always releases it.</li>
+              <li>Click the floor to walk there. <kbd>E</kbd> or <kbd>Enter</kbd> inspects what is under the dot.</li>
+            </ul>
+          </section>
+          <section>
+            <p class="details-block-label">// SHORTCUTS</p>
+            <ul class="help-list">
+              <li><kbd>G</kbd> guided · <kbd>X</kbd> explore · <kbd>L</kbd> lights · <kbd>M</kbd> sound</li>
+              <li><kbd>Esc</kbd> closes or steps back · <kbd>?</kbd> this panel · <kbd>`</kbd> diagnostics</li>
+            </ul>
+          </section>
+          <section>
+            <p class="details-block-label">// ABOUT THIS ROOM</p>
+            <p class="help-text">The room is fictional. The projects and the certificates are real. Nothing here is tracked, stored or sent anywhere; the quality setting is chosen on your device and forgotten when you leave.</p>
+            <p class="help-text"><a class="ws-inline-link" href="?view=text">Text version of the workshop</a></p>
+          </section>
+        </div>
+        <div class="help-quality">
+          <p class="details-block-label" id="quality-label">// QUALITY</p>
+          <div class="ws-mode" role="group" aria-labelledby="quality-label" id="ws-quality">
+            <button type="button" class="ws-chipbtn" data-quality="auto" aria-pressed="true">Auto</button>
+            <button type="button" class="ws-chipbtn" data-quality="low" aria-pressed="false">Low</button>
+            <button type="button" class="ws-chipbtn" data-quality="medium" aria-pressed="false">Medium</button>
+            <button type="button" class="ws-chipbtn" data-quality="high" aria-pressed="false">High</button>
+          </div>
+          <p class="help-text ws-dim" id="ws-quality-note"></p>
+          <div class="ws-mode" role="group" aria-label="Motion">
+            <button type="button" class="ws-chipbtn" id="ws-motion" aria-pressed="false">Play animations</button>
+          </div>
+        </div>
+      </div>
+      <button type="button" class="modal-close-btn" data-close aria-label="Close help">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       Text version — the complete, accessible workshop without WebGL.
+       This is also what visitors see without JavaScript or WebGL2.
+  ======================================================================= -->
+  <main id="ws-text" class="ws-text-view" aria-labelledby="ws-text-title">
+    <div class="ws-text-inner">
+      <p class="section-label"><a class="ws-inline-link" href="../">← Portfolio</a> &nbsp;//&nbsp; LOG_ENTRY // WORKSHOP</p>
+      <h1 id="ws-text-title" class="ws-text-title">The Workshop</h1>
+      <p class="ws-text-lede">
+        The workshop is an optional 3D room built from the things I work on — printers, a soldering bench,
+        a programming desk, a physics corner and an achievements wall.
+      </p>
+      <p class="ws-text-note">
+        This isn’t my actual room. Think of it as a workshop made from the things I build.
+      </p>
+      <p id="ws-text-reason" class="ws-text-reason" hidden></p>
+      <p class="ws-text-switch"><a class="btn-outline" href="./">Try the 3D workshop</a></p>
+
+      <section class="ws-text-section" aria-labelledby="ws-text-projects">
+        <header class="section-header">
+          <span class="section-label">SYS // PROJECTS</span>
+          <h2 id="ws-text-projects" class="section-title">On the benches</h2>
+        </header>
+        <ul class="ws-text-projects">
+          <li>
+            <span class="card-sys-id">SYS_01 // SOFTWARE</span>
+            <h3 class="card-title">Aether Gravity</h3>
+            <p class="card-tagline">A Minimalist Cosmic Space Simulator</p>
+            <p class="ws-text-where">In the workshop: the orrery in the apse, running on Keplerian orbits.</p>
+            <p class="ws-text-links"><a class="card-link" href="https://github.com/AntonisPsarras/Aether-Gravity" target="_blank" rel="noopener noreferrer">GitHub</a><a class="card-link" href="https://aether-gravity.netlify.app/" target="_blank" rel="noopener noreferrer">Live Demo</a></p>
+          </li>
+          <li>
+            <span class="card-sys-id">SYS_02 // SOFTWARE</span>
+            <h3 class="card-title">ScholiLink</h3>
+            <p class="card-tagline">Production-Grade Student Platform</p>
+            <p class="ws-text-where">In the workshop: a tablet and emulator box on the programming desk, running demo data.</p>
+            <p class="ws-text-links"><a class="card-link" href="https://github.com/AntonisPsarras/Scholilink" target="_blank" rel="noopener noreferrer">GitHub</a></p>
+          </li>
+          <li>
+            <span class="card-sys-id">SYS_03 // HARDWARE</span>
+            <h3 class="card-title">Wind Turbine System</h3>
+            <p class="card-tagline">Functional Balcony Power Generator</p>
+            <p class="ws-text-where">In the workshop: a test stand facing a fan, with the rectifier, boost converters and TP4056 charger exposed.</p>
+            <p class="ws-text-links"><a class="card-link" href="https://makerworld.com/en/models/2967248-wind-turbine-project-functional-simple-turbine#profileId-3327133" target="_blank" rel="noopener noreferrer">MakerWorld</a></p>
+          </li>
+          <li>
+            <span class="card-sys-id">SYS_04 // HARDWARE</span>
+            <h3 class="card-title">MoonCamp</h3>
+            <p class="card-tagline">Modular Magnetic Lunar Habitat</p>
+            <p class="ws-text-where">In the workshop: a miniature with nine modules whose domes lift off.</p>
+            <p class="ws-text-links"><a class="card-link" href="https://makerworld.com/en/models/2492018-modular-moon-base-magnetic-lunar-habitat#profileId-2738460" target="_blank" rel="noopener noreferrer">MakerWorld</a></p>
+          </li>
+          <li>
+            <span class="card-sys-id">SYS_05 // INTEGRATED</span>
+            <h3 class="card-title">Guardian System</h3>
+            <p class="card-tagline">RFID Entry &amp; Home Security</p>
+            <p class="ws-text-where">In the workshop: the fictional doorbell you ring to get in, and an abstract panel inside.</p>
+            <p class="ws-text-links"><a class="card-link" href="https://github.com/AntonisPsarras/guardian-system" target="_blank" rel="noopener noreferrer">GitHub</a></p>
+          </li>
+          <li>
+            <span class="card-sys-id">SYS_06 // INTEGRATED</span>
+            <h3 class="card-title">LensTile</h3>
+            <p class="card-tagline">Magnetic Image Tiles for Modular Glasses Cases</p>
+            <p class="ws-text-where">In the workshop: a tile printing with Aether’s orbit art, Smooth and Relief samples, and the case on the shelf.</p>
+            <p class="ws-text-links"><a class="card-link" href="https://github.com/AntonisPsarras/lenstile" target="_blank" rel="noopener noreferrer">GitHub</a><a class="card-link" href="https://antonispsarras.github.io/lenstile/" target="_blank" rel="noopener noreferrer">Live App</a></p>
+          </li>
+          <li>
+            <span class="card-sys-id">SYS_07 // INTEGRATED</span>
+            <h3 class="card-title">BrickCast</h3>
+            <p class="card-tagline">STL to Interlocking Brick Builds with Full Guidance</p>
+            <p class="ws-text-where">In the workshop: one habitat module shown as mesh, voxel grid and bricks.</p>
+            <p class="ws-text-links"><a class="card-link" href="https://github.com/AntonisPsarras/BrickCast" target="_blank" rel="noopener noreferrer">GitHub</a></p>
+          </li>
+        </ul>
+        <p class="ws-text-more"><a class="ws-inline-link" href="../#projects-sec">Full project dossiers on the portfolio →</a></p>
+      </section>
+
+      <section class="ws-text-section" aria-labelledby="ws-text-awards">
+        <header class="section-header">
+          <span class="section-label">SYS // ACHIEVEMENTS</span>
+          <h2 id="ws-text-awards" class="section-title">On the wall</h2>
+        </header>
+        <p class="ws-text-note">National physics and mathematics competitions. Personal details on each certificate are redacted.</p>
+        <ul class="ws-text-awards">
+          <li><a class="ws-award-thumb" href="assets/awards/phy-aristarchos-13-phase-c-1st.1600.webp" data-award="phy-aristarchos-13-phase-c-1st"><img src="assets/awards/phy-aristarchos-13-phase-c-1st.512.webp" width="512" height="360" loading="lazy" alt="Certificate: 1st Prize, 13th Panhellenic Physics Competition Aristarchos, third phase. Union of Greek Physicists." /><span>1st Prize — 13th Panhellenic Physics Competition “Aristarchos”, third phase · Union of Greek Physicists</span></a></li>
+          <li><a class="ws-award-thumb" href="assets/awards/phy-aristarchos-13-1st.1600.webp" data-award="phy-aristarchos-13-1st"><img src="assets/awards/phy-aristarchos-13-1st.512.webp" width="512" height="356" loading="lazy" alt="Certificate: 1st Prize, 13th Panhellenic Physics Competition Aristarchos. Union of Greek Physicists." /><span>1st Prize — 13th Panhellenic Physics Competition “Aristarchos” · Union of Greek Physicists</span></a></li>
+          <li><a class="ws-award-thumb" href="assets/awards/phy-panhellenic-12-2nd.1600.webp" data-award="phy-panhellenic-12-2nd"><img src="assets/awards/phy-panhellenic-12-2nd.512.webp" width="512" height="364" loading="lazy" alt="Certificate: 2nd Prize, 12th Panhellenic Physics Competition. Union of Greek Physicists." /><span>2nd Prize — 12th Panhellenic Physics Competition · Union of Greek Physicists</span></a></li>
+          <li><a class="ws-award-thumb" href="assets/awards/math-hms-2nd.1600.webp" data-award="math-hms-2nd"><img src="assets/awards/math-hms-2nd.512.webp" width="512" height="358" loading="lazy" alt="Certificate: 2nd Prize, Thales and Euclid Panhellenic Mathematics Competitions. Hellenic Mathematical Society, Central Macedonia Branch." /><span>2nd Prize — “Thales” &amp; “Euclid” Panhellenic Mathematics Competitions · Hellenic Mathematical Society</span></a></li>
+          <li><a class="ws-award-thumb" href="assets/awards/math-hms-commendation.1600.webp" data-award="math-hms-commendation"><img src="assets/awards/math-hms-commendation.512.webp" width="512" height="358" loading="lazy" alt="Certificate: Commendation, Thales and Euclid Panhellenic Mathematics Competitions. Hellenic Mathematical Society, Central Macedonia Branch." /><span>Commendation — “Thales” &amp; “Euclid” Panhellenic Mathematics Competitions · Hellenic Mathematical Society</span></a></li>
+          <li><a class="ws-award-thumb" href="assets/awards/math-municipal-thales-euclid.1600.webp" data-award="math-municipal-thales-euclid"><img src="assets/awards/math-municipal-thales-euclid.512.webp" width="512" height="355" loading="lazy" alt="Certificate: Municipal honorary award for distinction in the Thales and Euclid mathematics competitions." /><span>Honorary Award — “Thales” &amp; “Euclid” mathematics competitions · Municipal honorary award</span></a></li>
+          <li><a class="ws-award-thumb" href="assets/awards/math-municipal-thales.1600.webp" data-award="math-municipal-thales"><img src="assets/awards/math-municipal-thales.512.webp" width="512" height="366" loading="lazy" alt="Certificate: Municipal honorary award for distinction in the Thales mathematics competition." /><span>Honorary Award — “Thales” mathematics competition · Municipal honorary award</span></a></li>
+        </ul>
+      </section>
+
+      <footer class="ws-text-foot">
+        <a class="btn-outline" href="../">Return to Portfolio</a>
+        <p class="footer-copy">&copy; 2026 Anthony (Antonis) Psarras</p>
+      </footer>
+    </div>
+  </main>
+</body>
+</html>

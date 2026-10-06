@@ -23,12 +23,15 @@
           <span class="nav-sep" aria-hidden="true">//</span>
           <span class="nav-role">Maker &amp; Developer</span>
         </div>
-        <a href="https://github.com/AntonisPsarras"
-           target="_blank" rel="noopener noreferrer"
-           class="nav-github">
-          <span class="icon" data-icon="github" aria-hidden="true"></span>
-          <span>GitHub</span>
-        </a>
+        <div class="nav-links">
+          <a href="workshop/" class="nav-workshop" data-workshop-entry>Workshop</a>
+          <a href="https://github.com/AntonisPsarras"
+             target="_blank" rel="noopener noreferrer"
+             class="nav-github">
+            <span class="icon" data-icon="github" aria-hidden="true"></span>
+            <span>GitHub</span>
+          </a>
+        </div>
       </div>
     </nav>
 
@@ -93,6 +96,9 @@
                class="btn-outline">
               <span class="icon" data-icon="github" aria-hidden="true"></span>
               GitHub Archive
+            </a>
+            <a href="workshop/" class="btn-text" data-workshop-entry>
+              Enter the Workshop <span class="btn-text-arrow" aria-hidden="true">→</span>
             </a>
           </div>
         </div>
@@ -1071,6 +1077,11 @@
       </div><!-- /modal-card -->
 
     </div><!-- /project-modal -->
+
+    <!-- Workshop entrance veil (orbits converge, then black) -->
+    <div class="workshop-veil" aria-hidden="true">
+      <span class="workshop-veil-label">LOG_ENTRY // WORKSHOP</span>
+    </div>
 
   </div><!-- /app -->
   <script src="script.js" defer></script>

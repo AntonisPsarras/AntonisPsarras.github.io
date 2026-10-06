@@ -7,3 +7,21 @@ coverage/
 .env*
 !.env.example
 PROFILE_README.md
+
+# Private source material — never publish.
+# Certificate photos in Awards/ carry camera EXIF and editor XMP; only the
+# sanitized derivatives in workshop/assets/awards/ belong in the repository.
+# Anchored with a leading slash: Git on Windows ignores case, so an unanchored
+# "Awards/" would also hide the public workshop/assets/awards/ directory.
+/Awards/
+raw/
+private/
+certificates-original/
+*.blend
+*.blend1
+*.psd
+*_original.*
+*_raw.*
+
+# Local tooling
+.claude/

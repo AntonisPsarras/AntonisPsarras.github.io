@@ -1847,6 +1847,119 @@ button, a { font: inherit; }
   transform: none !important;
 }
 
+/* ==========================================================================
+   Workshop entrance — a quiet secondary CTA and a short transition.
+   The workshop itself (Three.js) only loads on /workshop/.
+   ========================================================================== */
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nav-workshop {
+  display: none;
+  padding: 0.5rem 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text-3);
+  text-decoration: none;
+  transition: color 0.25s ease;
+}
+
+.nav-workshop:hover { color: var(--text-1); }
+
+@media (min-width: 640px) {
+  .nav-workshop { display: inline-flex; }
+}
+
+.btn-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.9375rem 0.5rem;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-size: 0 1px;
+  background-position: 0.5rem calc(100% - 0.7rem);
+  transition: color 0.25s ease, background-size 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.btn-text:hover,
+.btn-text:focus-visible {
+  color: var(--text-1);
+  background-size: calc(100% - 1rem) 1px;
+}
+
+.btn-text-arrow {
+  display: inline-block;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.btn-text:hover .btn-text-arrow { transform: translateX(3px); }
+
+.workshop-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.45s ease 0.18s, visibility 0s linear 0.63s;
+}
+
+.workshop-veil-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: var(--text-2);
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.3s ease 0.32s, transform 0.3s ease 0.32s;
+}
+
+body.is-entering-workshop .workshop-veil {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.45s ease 0.18s, visibility 0s;
+}
+
+body.is-entering-workshop .workshop-veil-label {
+  opacity: 1;
+  transform: none;
+}
+
+/* The hero orbits converge on their star before the page goes dark */
+#gravity-canvas {
+  transform-origin: 72% 50%;
+  transition: transform 0.6s cubic-bezier(0.55, 0, 0.75, 0.2), opacity 0.5s ease 0.1s;
+}
+
+body.is-entering-workshop #gravity-canvas {
+  transform: scale(0.06);
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .workshop-veil,
+  .workshop-veil-label,
+  #gravity-canvas,
+  .btn-text,
+  .btn-text-arrow { transition: none; }
+}
+
 
 
 

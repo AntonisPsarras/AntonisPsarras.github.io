@@ -1,0 +1,21 @@
+three.js — vendored, unmodified official build
+
+Release      : three@0.186.1 (REVISION '186')
+Source       : https://registry.npmjs.org/three/-/three-0.186.1.tgz
+Integrity    : sha512-blFeqb49wRCSGUGj7gtpfnSGHy2lwDk94RhUmS1c/hTby70kvChbWpkJ4Pm1390LqzzvTmzgXKHPEafJwCb8jA==
+               (verified by `npm pack three@0.186.1`)
+Upstream     : https://github.com/mrdoob/three.js
+License      : MIT — see LICENSE (Copyright © 2010-2026 three.js authors)
+
+Files (copied byte-for-byte from the package's build/ directory):
+  three.module.js   sha256 9052042d676cb0fdc1ddfefe193053f34b7ac0513a616fdac4535d49987812ea
+  three.core.js     sha256 9edde002b066a9a05676a6127f67735b62baf399bdea529f2f7e31657da769e6
+  LICENSE
+
+Notes
+  - The 0.186 npm package no longer ships pre-minified builds, so the readable
+    ES module builds are vendored as-is. GitHub Pages serves them gzip-compressed.
+  - three.module.js imports './three.core.js' relatively; no import map is used.
+  - No addons (examples/jsm) are vendored. The workshop implements its own
+    pointer-lock look controls, geometry merging and environment map.
+  - Used only by /workshop/. The portfolio homepage never loads these files.

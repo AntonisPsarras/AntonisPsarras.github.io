@@ -807,6 +807,35 @@ function initScrollReveal() {
 }
 
 /* ==========================================================================
+   Workshop entrance — orbits converge, the page goes dark, then navigate.
+   Plain links underneath: new-tab / modified clicks behave normally, and
+   reduced-motion visitors go straight there. Nothing is preloaded here.
+   ========================================================================== */
+function initWorkshopEntry() {
+  const links = document.querySelectorAll('[data-workshop-entry]');
+  if (!links.length) return;
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  links.forEach((link) => {
+    link.addEventListener('click', (e) => {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      e.preventDefault();
+      const href = link.href;
+      if (reduce.matches) {
+        window.location.href = href;
+        return;
+      }
+      document.body.classList.add('is-entering-workshop');
+      setTimeout(() => { window.location.href = href; }, 680);
+    });
+  });
+
+  /* Coming back with the browser's Back button restores this page from the
+     back/forward cache — make sure it isn't still dark. */
+  window.addEventListener('pageshow', () => document.body.classList.remove('is-entering-workshop'));
+}
+
+/* ==========================================================================
    Boot
    ========================================================================== */
 document.addEventListener('DOMContentLoaded', () => {
@@ -817,4 +846,5 @@ document.addEventListener('DOMContentLoaded', () => {
   initScrollReveal();
   initOrrery();
   initOrbitalCanvas();
+  initWorkshopEntry();
 });
