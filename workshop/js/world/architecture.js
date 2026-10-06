@@ -227,23 +227,10 @@ export function buildArchitecture(kit, world) {
   kit.sphere(0.018, M.ledWhite, 10, -CORRIDOR.x + 0.01, 1.55 + 0.62 * 0.98, 7.05 + 0.25, g);
   kit.sphere(0.03, M.ledWarm, 10, -CORRIDOR.x + 0.01, 1.55, 7.05, g);
 
-  // stencil above the door
-  const stencil = kit.labelPlane('SYS_00 // WORKSHOP', 0.62, { size: 30, color: '#d8d4cc', spacing: 6, opacity: 0.85 });
-  stencil.position.set(0, 2.55, DOOR.zOut + 0.003);
+  // stencil beside the door (the Guardian door lamp now sits above it; see guardian.js)
+  const stencil = kit.labelPlane('SYS_00 // WORKSHOP', 0.4, { size: 30, color: '#d8d4cc', spacing: 6, opacity: 0.85 });
+  stencil.position.set(0.86, 1.62, DOOR.zOut + 0.003);
   g.add(stencil);
-
-  // warm sconce beside the door
-  const sconce = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.2, kit.seg(16), 1, false, 0, Math.PI), M.steelDark);
-  sconce.position.set(-CORRIDOR.x, 2.02, 5.35);
-  g.add(sconce);
-  kit.box(0.06, 0.004, 0.12, M.ledWarm, -CORRIDOR.x + 0.035, 1.92, 5.35, g);
-  const sconceWash = kit.wash(1.6, 1.9, 0xffc78a, 0.16);
-  sconceWash.position.set(-CORRIDOR.x + 0.004, 1.4, 5.35);
-  sconceWash.rotation.y = Math.PI / 2;
-  g.add(sconceWash);
-  const sconceLight = new THREE.PointLight(0xffb070, 2.6, 0, 2);
-  sconceLight.position.set(-CORRIDOR.x + 0.25, 1.85, 5.35);
-  g.add(world.addLight(sconceLight, 0.7));
 
   /* ── Door ────────────────────────────────────────────────────────── */
   // steel frame trims on both faces
@@ -311,94 +298,7 @@ export function buildArchitecture(kit, world) {
   world.shared.door = door;
   world.shared.doorSlit = slit;
 
-  /* ── Guardian-inspired doorbell (outside) ────────────────────────── */
-  const bell = new THREE.Group();
-  bell.position.set(0.85, 1.32, DOOR.zOut);
-  kit.roundBox(0.07, 0.16, 0.024, 0.012, M.blackGloss, 0, 0, 0.012, bell);
-  kit.box(0.045, 0.02, 0.002, M.plasticMid, 0, 0.052, 0.025, bell);
-  const btn = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, 0.008, kit.seg(20)), M.steelDark);
-  btn.rotation.x = Math.PI / 2;
-  btn.position.set(0, -0.025, 0.027);
-  btn.userData.keep = true;
-  bell.add(btn);
-  const bellLedMat = new THREE.MeshBasicMaterial({ color: 0x8aa6c8, name: 'bellLed' });
-  const bellLed = new THREE.Mesh(new THREE.TorusGeometry(0.019, 0.0018, 6, kit.seg(32)), bellLedMat);
-  bellLed.position.set(0, -0.025, 0.026);
-  bellLed.userData.keep = true;
-  bell.add(bellLed);
-  g.add(bell);
-  const bellStates = { idle: 0x8aa6c8, ring: 0xffa040, open: 0xf4f1ea };
-  let bellState = 'idle', bellPulse = 0;
-  world.shared.doorbell = {
-    set(state) { bellState = state; bellPulse = 0; },
-    press() { btn.position.z = 0.023; setTimeout(() => { btn.position.z = 0.027; }, 160); },
-  };
-  world.onUpdate((dt, t, f) => {
-    const c = new THREE.Color(bellStates[bellState]);
-    if (bellState === 'ring' && !f.reduced) { bellPulse += dt; c.multiplyScalar(0.55 + 0.45 * (0.5 + 0.5 * Math.sin(bellPulse * 7))); }
-    else if (bellState === 'idle' && !f.reduced) c.multiplyScalar(0.7 + 0.3 * (0.5 + 0.5 * Math.sin(t * 1.3)));
-    bellLedMat.color.copy(c);
-  });
-  world.addHotspot({
-    id: 'doorbell', zone: 'outside', kind: 'action',
-    anchor: [0.85, 1.42, DOOR.zOut + 0.03],
-    hit: [[0.16, 0.26, 0.12], [0.85, 1.32, DOOR.zOut + 0.04]],
-    view: [[0.4, 1.5, 5.75], [0.85, 1.3, DOOR.zOut]],
-  });
-
-  /* ── Inside the entrance ─────────────────────────────────────────── */
-  // Guardian-inspired panel: abstract status only, no PINs, no layout
-  const panel = new THREE.Group();
-  panel.position.set(1.2, 1.4, DOOR.zIn);
-  panel.rotation.y = Math.PI;
-  kit.roundBox(0.17, 0.27, 0.022, 0.014, M.blackGloss, 0, 0, 0.011, panel);
-  const panelCanvas = kit.canvas(256, 384);
-  const panelTex = kit.canvasTexture(panelCanvas);
-  const panelScreen = new THREE.Mesh(new THREE.PlaneGeometry(0.13, 0.195), new THREE.MeshBasicMaterial({ map: panelTex, toneMapped: false, name: 'panelScreen' }));
-  panelScreen.position.set(0, 0.012, 0.0235);
-  panelScreen.userData.keep = true;
-  panel.add(panelScreen);
-  g.add(panel);
-  let doorShown = null;
-  function drawPanel(open) {
-    const c = panelCanvas.getContext('2d');
-    c.fillStyle = '#050607';
-    c.fillRect(0, 0, 256, 384);
-    c.strokeStyle = 'rgba(255,255,255,0.75)';
-    c.lineWidth = 2;
-    for (const [r, a] of [[62, 0.75], [44, 0.35], [26, 0.75]]) {
-      c.globalAlpha = a;
-      c.beginPath();
-      c.arc(128, 120, r, 0, Math.PI * 2);
-      c.stroke();
-    }
-    c.globalAlpha = 1;
-    c.fillStyle = open ? '#f4f1ea' : '#8aa6c8';
-    c.beginPath(); c.arc(128, 120, 7, 0, Math.PI * 2); c.fill();
-    c.fillStyle = 'rgba(255,255,255,0.9)';
-    c.font = '500 19px "JetBrains Mono", monospace';
-    c.textAlign = 'center';
-    c.fillText('SYS_05 // ONLINE', 128, 226);
-    c.fillStyle = 'rgba(255,255,255,0.55)';
-    c.font = '400 16px "JetBrains Mono", monospace';
-    c.fillText(`DOOR   ${open ? 'OPEN' : 'CLOSED'}`, 128, 270);
-    c.fillText('GUEST  YOU', 128, 298);
-    c.fillStyle = 'rgba(255,255,255,0.3)';
-    c.font = '400 12px "JetBrains Mono", monospace';
-    c.fillText('FICTIONAL PANEL', 128, 350);
-    panelTex.needsUpdate = true;
-  }
-  drawPanel(false);
-  world.onUpdate(() => {
-    const open = door.t > 0.5;
-    if (open !== doorShown) { doorShown = open; drawPanel(open); }
-  });
-  world.addHotspot({
-    id: 'guardian-panel', zone: 'entrance', projectId: 'gs',
-    anchor: [1.2, 1.6, DOOR.zIn - 0.03],
-    hit: [[0.24, 0.34, 0.1], [1.2, 1.4, DOOR.zIn - 0.04]],
-    view: [[1.05, 1.5, 3.55], [1.2, 1.38, DOOR.zIn]],
-  });
+  /* The Guardian devices (door lamp, doorbell, interior portal, control panel) live in guardian.js. */
 
   // light switch
   const sw = new THREE.Group();
@@ -432,14 +332,14 @@ export function buildArchitecture(kit, world) {
     c.font = 'italic 300 46px "Cormorant Garamond", Georgia, serif';
     c.fillText('built from the things I work on', 60, 210);
   }, { lit: true });
-  plaque.position.set(2.6, 1.55, DOOR.zIn - 0.004);
+  plaque.position.set(3.1, 1.55, DOOR.zIn - 0.004);
   plaque.rotation.y = Math.PI;
   g.add(plaque);
   world.addHotspot({
     id: 'workshop-log', zone: 'entrance',
-    anchor: [2.6, 1.68, DOOR.zIn - 0.03],
-    hit: [[0.56, 0.22, 0.08], [2.6, 1.55, DOOR.zIn - 0.04]],
-    view: [[2.45, 1.6, 3.5], [2.6, 1.55, DOOR.zIn]],
+    anchor: [3.1, 1.68, DOOR.zIn - 0.03],
+    hit: [[0.56, 0.22, 0.08], [3.1, 1.55, DOOR.zIn - 0.04]],
+    view: [[2.95, 1.6, 3.5], [3.1, 1.55, DOOR.zIn]],
   });
 
   world.addHotspot({
@@ -449,7 +349,7 @@ export function buildArchitecture(kit, world) {
     view: [[0, 1.65, 2.7], [0, 1.4, DOOR.zIn]],
   });
 
-  world.addLocation('entrance', [0.25, 1.65, 2.35], [0.2, 1.35, 4.5], ['guardian-panel', 'light-switch', 'workshop-log', 'exit-door']);
+  world.addLocation('entrance', [0.55, 1.62, 2.3], [1.1, 1.4, 4.5], ['guardian-panel', 'guardian-tablet', 'light-switch', 'workshop-log', 'exit-door']);
 
   /* ── Lights ──────────────────────────────────────────────────────── */
   const hemi = new THREE.HemisphereLight(0xa4acbc, 0x1c1814, 4.2);

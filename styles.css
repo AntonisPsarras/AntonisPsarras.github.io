@@ -1947,15 +1947,131 @@ body.is-entering-workshop .workshop-veil-label {
   transition: transform 0.6s cubic-bezier(0.55, 0, 0.75, 0.2), opacity 0.5s ease 0.1s;
 }
 
-body.is-entering-workshop #gravity-canvas {
+body.is-entering-workshop #gravity-canvas,
+body.is-portal-jump #gravity-canvas {
   transform: scale(0.06);
   opacity: 0;
+}
+
+/* ==========================================================================
+   The portal — a wormhole / time-machine dial at the centre of the hero's
+   orbits. script.js draws it on the canvas; without JS it is a CSS disc and
+   the whole thing is still a plain link to /workshop/.
+   ========================================================================== */
+.workshop-portal {
+  --portal: clamp(210px, 37vmin, 420px);
+  position: absolute;
+  left: 72%;
+  top: 50%;
+  z-index: 2;
+  display: block;
+  width: var(--portal);
+  height: var(--portal);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  color: var(--text-1);
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  opacity: 0;
+  transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.7s;
+}
+
+.slide--hero.is-in-view .workshop-portal { opacity: 1; }
+
+/* No-JS look, and the surface under the canvas */
+.workshop-portal::before {
+  content: '';
+  position: absolute;
+  inset: 17%;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff3dd 0, rgba(255, 226, 184, 0.55) 16%, #050505 62%);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 0 46px rgba(255, 226, 184, 0.22);
+}
+
+.portal-canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.portal-caption {
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 0.1rem);
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  transition: color 0.3s ease, letter-spacing 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.portal-caption-arrow { display: inline-block; transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1); }
+
+.workshop-portal:hover .portal-caption,
+.workshop-portal:focus-visible .portal-caption { color: var(--text-1); letter-spacing: 0.24em; }
+.workshop-portal:hover .portal-caption-arrow,
+.workshop-portal:focus-visible .portal-caption-arrow { transform: translateX(4px); }
+
+.workshop-portal:focus-visible {
+  outline: 1px solid rgba(255, 255, 255, 0.9);
+  outline-offset: 8px;
+}
+
+.workshop-portal.is-diving { visibility: hidden; transition: none; }
+
+/* The jump: a full-screen canvas takes over from the small one */
+.portal-fx {
+  position: fixed;
+  inset: 0;
+  z-index: 299;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* Hero copy leaves while the orbits fall into the portal */
+body.is-portal-jump .slide--hero .slide-content > * {
+  opacity: 0 !important;
+  transition: opacity 0.45s ease !important;
+  transition-delay: 0s !important;
+}
+
+/* Wide screens: keep the copy clear of the portal and let the title breathe */
+@media (min-width: 900px) {
+  .slide--hero .slide-content > * { max-width: min(46rem, 56%); }
+  .slide--hero .hero-title { font-size: clamp(3rem, 6.2vw, 5.75rem); }
+}
+
+/* Narrow screens: the portal sits in the flow, under the buttons */
+@media (max-width: 899px) {
+  .workshop-portal {
+    --portal: clamp(160px, 46vw, 240px);
+    position: relative;
+    left: auto;
+    top: auto;
+    transform: none;
+    margin: 0.5rem auto 1.75rem;
+    flex-shrink: 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .workshop-veil,
   .workshop-veil-label,
   #gravity-canvas,
+  .workshop-portal,
+  .portal-caption,
+  .portal-caption-arrow,
   .btn-text,
   .btn-text-arrow { transition: none; }
 }

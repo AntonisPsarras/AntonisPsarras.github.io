@@ -10,8 +10,8 @@ const MODULES = [
   '../../vendor/three/three.core.js',
   '../../vendor/three/three.module.js',
   './app.js', './content.js', './quality.js', './ui.js', './overlays.js', './dossiers.js',
-  './interact.js', './controls.js', './dialogue.js', './audio.js', './avatar.js', './workshop-scene.js',
-  './world/kit.js', './world/architecture.js', './world/gallery.js', './world/fabrication.js',
+  './interact.js', './controls.js', './touchpad.js', './dialogue.js', './audio.js', './avatar.js', './workshop-scene.js',
+  './world/kit.js', './world/architecture.js', './world/guardian.js', './world/gallery.js', './world/fabrication.js', './world/printers.js',
   './world/electronics.js', './world/programming.js', './world/study.js', './world/exhibits.js',
 ];
 

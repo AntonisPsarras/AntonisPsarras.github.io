@@ -49,4 +49,8 @@
   var reduce = motion === 'reduce' ||
     (motion !== 'full' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   if (reduce) html.classList.add('ws-reduced');
+
+  /* ?via=portal: set by the homepage portal. Cosmetic only (a short arrival
+     flourish); it is read here and nowhere else, and nothing is stored. */
+  if (!reduce && params.get('via') === 'portal' && !reason) html.classList.add('ws-via-portal');
 })();

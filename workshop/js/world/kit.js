@@ -61,6 +61,7 @@ export class Kit {
       plastic:     std(0x1f2023, 0.55),
       plasticMid:  std(0x3a3b3f, 0.5),
       pla:         std(0xd8d4cc, 0.55),
+      plaWhite:    std(0xeceae3, 0.46),
       plaGrey:     std(0x8f8e8b, 0.6),
       plaWarm:     std(0xb59a7a, 0.6),
       paper:       std(0xe8e4dc, 0.95),
@@ -103,7 +104,7 @@ export class Kit {
        colours — e.g. six plastics become one draw call, not six. */
     this.families = {
       matte:    { roughness: 0.88, metalness: 0, members: ['black', 'rubber', 'paper', 'mat', 'clay', 'regolith', 'ceiling', 'hoodie', 'trousers', 'sole'] },
-      satin:    { roughness: 0.55, metalness: 0, members: ['plastic', 'plasticMid', 'pla', 'plaGrey', 'plaWarm'] },
+      satin:    { roughness: 0.55, metalness: 0, members: ['plastic', 'plasticMid', 'pla', 'plaWhite', 'plaGrey', 'plaWarm'] },
       metal:    { roughness: 0.42, metalness: 0.88, members: ['steel', 'steelLight', 'steelDark', 'brass', 'copper'] },
       plaster:  { roughness: 0.94, metalness: 0, map: noise, members: ['plaster', 'gallery', 'corridor'] },
       wood:     { roughness: 0.7, metalness: 0, map: grain, members: ['oak', 'oakDark'] },

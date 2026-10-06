@@ -118,28 +118,39 @@ export const AWARD_IDS = Object.freeze(AWARDS.map((a) => a.id));
 export const LOCATIONS = [
   { id: 'overview',     label: 'Overview',          sys: 'LOC_00', summary: 'The whole workshop: certificates on the left wall, printers on the central bench, desks for electronics, code and physics on the right, the Aether orrery straight ahead.' },
   { id: 'achievements', label: 'Achievements',      sys: 'LOC_01', summary: 'The achievements wall: seven framed certificates from national physics and mathematics competitions, with personal details redacted.' },
-  { id: 'fabrication',  label: 'Printers',          sys: 'LOC_02', summary: 'The fabrication bench: an enclosed printer printing a LensTile and an open-bed printer printing a MoonCamp dome.' },
+  { id: 'fabrication',  label: 'Printers',          sys: 'LOC_02', summary: 'The fabrication bench: a Bambu Lab P2S printing a LensTile and a Bambu Lab A1 printing a MoonCamp dome, with the filament, tools and parts bin around them.' },
   { id: 'electronics',  label: 'Electronics',       sys: 'LOC_03', summary: 'The electronics bench: soldering station, circuit board revisions, an oscilloscope, a multimeter and calipers.' },
   { id: 'programming',  label: 'Programming',       sys: 'LOC_04', summary: 'The programming desk: a monitor showing this room’s own source code, a second screen and the ScholiLink station.' },
   { id: 'physics',      label: 'Physics',           sys: 'LOC_05', summary: 'The physics corner: a chalkboard of orbital equations, a Bloch sphere, twin double pendulums and study notes.' },
   { id: 'aether',       label: 'Aether orrery',     sys: 'LOC_06', summary: 'The Aether Gravity orrery: a star and four bodies on Keplerian orbits.' },
   { id: 'shelf',        label: 'Project shelf',     sys: 'LOC_07', summary: 'The project shelf: MoonCamp, BrickCast, LensTile and the drawer of failed iterations.' },
   { id: 'turbine',      label: 'Turbine stand',     sys: 'LOC_08', summary: 'The wind turbine test stand: a turbine facing a fan, with its charging electronics exposed.' },
-  { id: 'entrance',     label: 'Entrance',          sys: 'LOC_09', summary: 'The entrance: the Guardian-inspired panel, the light switch and the workshop log.' },
+  { id: 'entrance',     label: 'Entrance',          sys: 'LOC_09', summary: 'The entrance: the Guardian interior portal and control panel, the light switch and the workshop log.' },
+  { id: 'guardian',     label: 'Guardian · door',   sys: 'LOC_10', summary: 'The Guardian System at the door: the lamp with its camera above it, the doorbell on the corridor wall, then the interior portal and control panel inside.' },
 ];
 export const LOCATION_IDS = Object.freeze(LOCATIONS.map((l) => l.id));
 
 /* Inspect-card copy, keyed by hotspot id. `project` opens a homepage dossier.
    `related` lists project ids offered as secondary links. */
 export const HOTSPOTS = {
+  'guardian-lamp': {
+    sys: 'SYS_05 // GUARDIAN · DOOR LAMP', title: 'Door lamp',
+    body: ['A printed black lamp with three frosted panels and the system’s camera behind the lens, above the door. Frigate person detection and the camera’s measured brightness drive its automatic control.', 'Here: walk into the corridor and it lights on its own, or set it by hand below.'],
+    project: 'gs',
+  },
   doorbell: {
-    sys: 'SYS_05 // GUARDIAN-INSPIRED', title: 'Doorbell',
-    body: ['A fictional doorbell inspired by the Guardian System — an RFID entry and presence project built around ESP32 readers and Home Assistant.', 'This one only rings.'],
+    sys: 'SYS_05 // GUARDIAN · DOORBELL', title: 'Doorbell',
+    body: ['The printed outdoor doorbell with its bell icon. It is also one of Guardian’s two ESP32 RFID readers: it shares one Home Assistant decision path with the interior portal.', 'Press it, then watch the portal’s speaker and the panel’s event log.'],
     project: 'gs',
   },
   'guardian-panel': {
-    sys: 'SYS_05 // INTEGRATED', title: 'Guardian panel',
-    body: ['An abstract panel standing in for the Guardian System: two printed ESP32 RFID readers, ESPHome firmware, Home Assistant automations and camera-driven alerts.', 'Nothing about this door — its position, its wiring or its panel — reflects the real installation.'],
+    sys: 'SYS_05 // GUARDIAN · INTERIOR PORTAL', title: 'Interior portal',
+    body: ['The interior reader: a speaker, a small status screen and a 3 × 4 keypad in a frosted printed shell, with the second ESP32 RFID reader. Guardian also has an elevated mode that challenges an unexpected opening with a card and master PIN before sounding an alarm.', 'The keypad here is a demo. It has no code, unlocks nothing and remembers nothing — press the keys, then # to arm or disarm.'],
+    project: 'gs',
+  },
+  'guardian-tablet': {
+    sys: 'SYS_05 // GUARDIAN · CONTROL PANEL', title: 'Control panel',
+    body: ['A stand-in for Guardian’s custom Home Assistant panel: camera view, presence, door lamp, mode and recent events. Every figure on it is demo data.', 'The door camera is the real one in the lamp. The room camera is a demo extra; the project has a single camera.'],
     project: 'gs',
   },
   'light-switch': {
@@ -155,13 +166,13 @@ export const HOTSPOTS = {
     body: ['Back to the portfolio.'],
   },
   'printer-enclosed': {
-    sys: 'FAB_01 // ENCLOSED FDM', title: 'Enclosed printer',
-    body: ['An original, stylized enclosed printer. It is printing a LensTile — the 148 × 53 mm magnetic image tile — carrying the orbit art from Aether Gravity.', '“I bought my first 3D printer a few years ago and soon fell in love with product design.”'],
+    sys: 'FAB_01 // BAMBU LAB P2S', title: 'Bambu Lab P2S',
+    body: ['The enclosed CoreXY printer. It is printing a LensTile — the 148 × 53 mm magnetic image tile — carrying the orbit art from Aether Gravity. Its spool hangs on the side holder.', '“I bought my first 3D printer a few years ago and soon fell in love with product design.”'],
     related: ['lt', 'ag'],
   },
   'printer-open': {
-    sys: 'FAB_02 // OPEN-BED FDM', title: 'Open-bed printer',
-    body: ['An original open-bed printer, slowly printing a MoonCamp habitat dome. The spool turns as the filament feeds.'],
+    sys: 'FAB_02 // BAMBU LAB A1', title: 'Bambu Lab A1',
+    body: ['The open-frame bed-slinger, slowly printing a MoonCamp habitat dome. The spool turns on its arm at the top left as the filament feeds.'],
     related: ['mc'],
   },
   'bench-tiles': {
@@ -255,7 +266,7 @@ export const HOTSPOTS = {
   },
   antonis: {
     sys: 'SYS_00 // HOST', title: 'Antonis',
-    body: ['A stylized stand-in, not a likeness. Ask a question — the answers come from a fixed script, not a chatbot.'],
+    body: ['A low-poly stand-in for me, not a portrait. Ask a question — the answers come from a fixed script, not a chatbot.'],
   },
 };
 
@@ -302,13 +313,16 @@ export const DIALOGUE = {
     brickcast: { text: 'Mesh, grid, bricks. That’s the whole pipeline in three steps.' },
     'lenstile-case': { text: 'Everything in LensTile runs locally. Your photo never leaves the browser.' },
     failed: { text: 'The most honest shelf in the room.', pose: 'shrug' },
-    'guardian-panel': { text: 'Guardian is how you got in — conceptually. The real system looks nothing like this door.' },
+    'guardian-lamp': { text: 'The lamp and its camera. Frigate spots a person, and it switches on by itself.' },
+    doorbell: { text: 'Printed, white, one button. It’s also an RFID reader.' },
+    'guardian-panel': { text: 'The interior portal. The hardware is real; this door and this room aren’t.' },
+    'guardian-tablet': { text: 'Everything on that panel is demo data. The camera in the lamp is real, though.' },
     night: { text: 'Better. Now you can see the orbits.' },
     printerNear: { text: 'Probably not the best place to stand.' },
   },
   doorbell: [
     { text: 'The door’s already open.' },
-    { text: 'Guardian heard you the first time.', pose: 'shrug' },
+    { text: 'Guardian heard you the first time. It logs everything.', pose: 'shrug' },
     { text: 'Still logged. Still open.' },
     { text: '…' },
   ],

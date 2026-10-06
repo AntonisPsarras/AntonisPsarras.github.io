@@ -10,6 +10,7 @@
    ========================================================================== */
 import { THREE, Kit, LAYER } from './world/kit.js';
 import { buildArchitecture } from './world/architecture.js';
+import { buildGuardian } from './world/guardian.js';
 import { buildGallery } from './world/gallery.js';
 import { buildFabrication } from './world/fabrication.js';
 import { buildElectronics } from './world/electronics.js';
@@ -22,6 +23,7 @@ import { buildAvatar } from './avatar.js';
    except through world.shared. */
 const ZONES = [
   ['architecture', buildArchitecture],
+  ['guardian', buildGuardian],
   ['achievements', buildGallery],
   ['fabrication', buildFabrication],
   ['electronics', buildElectronics],
@@ -55,7 +57,8 @@ export class World {
       enabled: true,
       ...def,
       anchor: new THREE.Vector3(...anchor),
-      view: { position: new THREE.Vector3(...view[0]), target: new THREE.Vector3(...view[1]) },
+      // optional third entry: waypoints the camera should fly through on the way
+      view: { position: new THREE.Vector3(...view[0]), target: new THREE.Vector3(...view[1]), via: (view[2] || []).map((p) => new THREE.Vector3(...p)) },
     };
     const [size, center, rotY = 0] = hit;
     hs.proxy = this.kit.proxy(size, center, hs.id, this.root, rotY);
@@ -79,7 +82,8 @@ export class World {
     this.colliders.segments.push(s);
     if (occluderHeight > 0) {
       const len = Math.hypot(bx - ax, bz - az);
-      this.addOccluder([len, occluderHeight, 0.12], [(ax + bx) / 2, occluderHeight / 2, (az + bz) / 2], -Math.atan2(bz - az, bx - ax));
+      // 6 cm thick: thin enough that small wall-mounted things (keys, buttons) can sit just in front of it
+      this.addOccluder([len, occluderHeight, 0.06], [(ax + bx) / 2, occluderHeight / 2, (az + bz) / 2], -Math.atan2(bz - az, bx - ax));
     }
     return s;
   }

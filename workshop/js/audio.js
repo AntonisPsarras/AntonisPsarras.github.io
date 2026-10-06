@@ -49,6 +49,11 @@ export class Sound {
         case 'gate':   this.#sweep(t, 520, 780, 0.09, 0.07); break;
         case 'tick':   this.#tone(2400, t, 0.03, 0.035); break;
         case 'slide':  this.#swell(t, 0.35, 900, 0.07); break;
+        case 'step':   this.#click(t, 240, 0.07, 0.035); break;
+        case 'run':    this.#click(t, 300, 0.1, 0.03); break;
+        case 'beep':   this.#tone(1760, t, 0.07, 0.05, 'square'); break;
+        case 'deny':   this.#tone(300, t, 0.16, 0.06, 'square'); this.#tone(220, t + 0.12, 0.2, 0.06, 'square'); break;
+        case 'ok':     this.#tone(1320, t, 0.08, 0.05, 'square'); this.#tone(1760, t + 0.09, 0.12, 0.05, 'square'); break;
         default: break;
       }
     } catch { /* audio is decoration; never let it break anything */ }

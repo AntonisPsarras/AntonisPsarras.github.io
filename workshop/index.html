@@ -52,6 +52,10 @@
           <svg class="ws-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>
           <span class="ws-btn-label">Night</span>
         </button>
+        <button type="button" id="ws-touchctl" class="ws-chipbtn" aria-pressed="false" title="On-screen controls">
+          <svg class="ws-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M7 12h10"/></svg>
+          <span class="ws-btn-label">Pad</span>
+        </button>
         <button type="button" id="ws-sound" class="ws-chipbtn" aria-pressed="false" title="Sound (M)">
           <svg class="ws-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path class="ws-ico-wave" d="M15.5 8.5a5 5 0 0 1 0 7"/><path class="ws-ico-mute" d="m16 9 5 6m0-6-5 6"/></svg>
           <span class="ws-btn-label" id="ws-sound-label">Sound off</span>
@@ -96,13 +100,35 @@
 
     <div id="ws-explore-hint" class="ws-explore-hint" hidden>
       <p class="ws-explore-keys">
-        <span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move</span>
-        <span><kbd>←</kbd><kbd>→</kbd> turn</span>
-        <span>drag to look</span>
-        <span>click floor to walk</span>
-        <span><kbd>E</kbd> inspect</span>
+        <span class="ws-only-mouse">mouse look</span>
+        <span class="ws-only-mouse"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move</span>
+        <span class="ws-only-mouse"><kbd>Shift</kbd> run</span>
+        <span class="ws-only-mouse"><kbd>E</kbd> or click: interact</span>
+        <span class="ws-only-mouse"><kbd>Esc</kbd> frees the cursor</span>
+        <span class="ws-only-touch">pad to walk</span>
+        <span class="ws-only-touch">drag to look</span>
+        <span class="ws-only-touch">tap objects, or Interact</span>
       </p>
-      <button type="button" id="ws-lock" class="ws-chipbtn">Lock mouse <span class="ws-dim">(Esc releases)</span></button>
+    </div>
+
+    <!-- Explore, mouse: shown whenever the view doesn't have the pointer (first entry, after Esc, after a dialog) -->
+    <button type="button" id="ws-resume" class="ws-resume" hidden>
+      <span class="ws-resume-title">Click to look around</span>
+      <span class="ws-resume-sub"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> walk · <kbd>E</kbd> interact · <kbd>Esc</kbd> frees the cursor</span>
+    </button>
+
+    <!-- Explore, touch: movement pad + Interact. Looking is a drag anywhere else. -->
+    <div id="ws-pad" class="ws-pad" hidden>
+      <div id="ws-stick" class="ws-stick" aria-hidden="true">
+        <span class="ws-stick-arrow ws-stick-arrow--n"></span>
+        <span class="ws-stick-arrow ws-stick-arrow--e"></span>
+        <span class="ws-stick-arrow ws-stick-arrow--s"></span>
+        <span class="ws-stick-arrow ws-stick-arrow--w"></span>
+        <span id="ws-stick-thumb" class="ws-stick-thumb"></span>
+      </div>
+      <button type="button" id="ws-act" class="ws-act" aria-label="Interact">
+        <span class="ws-act-label">Interact</span>
+      </button>
     </div>
 
     <div class="ws-ask-wrap">
@@ -138,7 +164,7 @@
         </button>
         <button type="button" id="ws-choose-explore" class="ws-choice">
           <span class="ws-choice-name">Explore</span>
-          <span class="ws-choice-desc">Walk with WASD, look by dragging, inspect with E.</span>
+          <span class="ws-choice-desc"><span class="ws-only-mouse">Walk with WASD, look with the mouse, interact with E.</span><span class="ws-only-touch">Walk with the on-screen pad, drag to look, tap Interact.</span></span>
         </button>
       </div>
     </section>
@@ -156,6 +182,9 @@
   </div>
 
   <div id="ws-fade" class="ws-fade" aria-hidden="true"><span id="ws-fade-label">LOG_ENTRY // 00</span></div>
+
+  <!-- Arrival bloom: only plays when you came through the homepage portal (?via=portal) -->
+  <div id="ws-arrive" class="ws-arrive" aria-hidden="true"></div>
 
   <!-- ======================================================================
        Project modal — same shell and classes as the portfolio's modal.
@@ -224,9 +253,10 @@
           <section>
             <p class="details-block-label">// EXPLORE</p>
             <ul class="help-list">
-              <li><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or <kbd>↑</kbd><kbd>↓</kbd> to move, <kbd>←</kbd><kbd>→</kbd> to turn.</li>
-              <li>Drag to look, or lock the mouse; <kbd>Esc</kbd> always releases it.</li>
-              <li>Click the floor to walk there. <kbd>E</kbd> or <kbd>Enter</kbd> inspects what is under the dot.</li>
+              <li>Move the mouse to look, like a first-person game. <kbd>Esc</kbd> frees the cursor; click the view to take it back.</li>
+              <li><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or <kbd>↑</kbd><kbd>↓</kbd> to walk, <kbd>Shift</kbd> to run, <kbd>←</kbd><kbd>→</kbd> to turn.</li>
+              <li><kbd>E</kbd>, <kbd>F</kbd>, <kbd>Enter</kbd> or a click interacts with whatever is under the dot. The label next to the dot says what.</li>
+              <li><strong>Phone or tablet:</strong> a walking pad and an Interact button appear at the bottom. Drag anywhere else to look, or tap an object. The <em>Pad</em> chip at the top turns them on or off.</li>
             </ul>
           </section>
           <section>
@@ -253,6 +283,12 @@
           <p class="help-text ws-dim" id="ws-quality-note"></p>
           <div class="ws-mode" role="group" aria-label="Motion">
             <button type="button" class="ws-chipbtn" id="ws-motion" aria-pressed="false">Play animations</button>
+          </div>
+          <p class="details-block-label" id="look-label">// LOOK SPEED</p>
+          <div class="ws-mode" role="group" aria-labelledby="look-label" id="ws-look">
+            <button type="button" class="ws-chipbtn" data-look="slow" aria-pressed="false">Slow</button>
+            <button type="button" class="ws-chipbtn" data-look="normal" aria-pressed="true">Normal</button>
+            <button type="button" class="ws-chipbtn" data-look="fast" aria-pressed="false">Fast</button>
           </div>
         </div>
       </div>
@@ -318,14 +354,14 @@
             <span class="card-sys-id">SYS_05 // INTEGRATED</span>
             <h3 class="card-title">Guardian System</h3>
             <p class="card-tagline">RFID Entry &amp; Home Security</p>
-            <p class="ws-text-where">In the workshop: the fictional doorbell you ring to get in, and an abstract panel inside.</p>
+            <p class="ws-text-where">In the workshop: the door lamp (with its camera) above the door, the doorbell on the corridor wall, and the interior portal with a demo keypad and a control panel with camera feeds inside.</p>
             <p class="ws-text-links"><a class="card-link" href="https://github.com/AntonisPsarras/guardian-system" target="_blank" rel="noopener noreferrer">GitHub</a></p>
           </li>
           <li>
             <span class="card-sys-id">SYS_06 // INTEGRATED</span>
             <h3 class="card-title">LensTile</h3>
             <p class="card-tagline">Magnetic Image Tiles for Modular Glasses Cases</p>
-            <p class="ws-text-where">In the workshop: a tile printing with Aether’s orbit art, Smooth and Relief samples, and the case on the shelf.</p>
+            <p class="ws-text-where">In the workshop: a tile printing with Aether’s orbit art on the Bambu Lab P2S, Smooth and Relief samples, and the case on the shelf.</p>
             <p class="ws-text-links"><a class="card-link" href="https://github.com/AntonisPsarras/lenstile" target="_blank" rel="noopener noreferrer">GitHub</a><a class="card-link" href="https://antonispsarras.github.io/lenstile/" target="_blank" rel="noopener noreferrer">Live App</a></p>
           </li>
           <li>

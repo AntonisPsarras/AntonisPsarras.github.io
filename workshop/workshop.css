@@ -205,6 +205,15 @@ kbd {
 .ws-app:not([data-inside="true"]) .ws-bar-controls .ws-mode,
 .ws-app:not([data-inside="true"]) #ws-lights { opacity: 0; pointer-events: none; visibility: hidden; }
 
+/* The Pad chip only means something while exploring */
+.ws-app:not([data-mode="explore"]) #ws-touchctl,
+.ws-app:not([data-inside="true"]) #ws-touchctl { display: none; }
+
+/* Copy that depends on whether on-screen controls are on (data-tc) */
+.ws-only-touch { display: none; }
+.ws-app[data-tc="true"] .ws-only-touch { display: inline; }
+.ws-app[data-tc="true"] .ws-only-mouse { display: none; }
+
 /* ── Top bar ───────────────────────────────────────────────────────────── */
 .ws-bar {
   position: absolute;
@@ -476,21 +485,144 @@ button.card-link:hover { background: rgba(255, 255, 255, 0.04); }
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 4px;
-  height: 4px;
-  margin: -2px 0 0 -2px;
+  width: 5px;
+  height: 5px;
+  margin: -2.5px 0 0 -2.5px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.85);
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.55);
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition: opacity 0.2s ease, background 0.2s ease;
   z-index: 15;
 }
+/* A ring closes around the dot when something is within reach */
+.ws-reticle::after {
+  content: '';
+  position: absolute;
+  inset: -9px;
+  border: 1px solid rgba(255, 255, 255, 0);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0);
+  transform: scale(0.35);
+  transition: transform 0.22s var(--ws-ease), border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.ws-reticle.is-hot { background: #fff; }
+.ws-reticle.is-hot::after { transform: scale(1); border-color: rgba(255, 255, 255, 0.9); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35); }
 .ws-app[data-mode="explore"][data-card="false"] .ws-reticle,
 .ws-app[data-mode="explore"]:not([data-card]) .ws-reticle { opacity: 0.7; }
-.ws-app[data-locked="true"] .ws-reticle { opacity: 1; }
-.ws-app[data-locked="true"] .ws-reticle.is-hot { transform: scale(2.2); background: #fff; }
+.ws-app[data-locked="true"] .ws-reticle,
+.ws-app[data-tc="true"][data-mode="explore"] .ws-reticle { opacity: 1; }
+.ws-app[data-tc="true"] .ws-target kbd { display: none; }
+
+/* ── Explore, mouse: take the pointer back ─────────────────────────────── */
+.ws-resume {
+  position: absolute;
+  left: 50%;
+  top: 60%;
+  transform: translate(-50%, -50%);
+  z-index: 24;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 1rem 1.7rem 1.05rem;
+  background: var(--ws-glass-2);
+  border: 1px solid var(--ws-line-2);
+  color: var(--text-1);
+  cursor: pointer;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  animation: ws-resume-in 0.4s var(--ws-ease) both;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.ws-resume[hidden] { display: none; }
+.ws-resume:hover { border-color: rgba(255, 255, 255, 0.5); background: rgba(24, 24, 28, 0.86); }
+.ws-resume-title { font-family: var(--font-serif); font-style: italic; font-size: 1.45rem; line-height: 1.1; }
+.ws-resume-sub { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-2); }
+@keyframes ws-resume-in { from { opacity: 0; transform: translate(-50%, calc(-50% + 8px)); } to { opacity: 1; transform: translate(-50%, -50%); } }
+
+/* ── Explore, touch: walking pad + Interact ────────────────────────────── */
+.ws-pad { position: absolute; inset: 0; z-index: 21; pointer-events: none; }
+.ws-pad[hidden] { display: none; }
+.ws-stick {
+  position: absolute;
+  left: calc(1.1rem + var(--ws-safe-l));
+  bottom: calc(1.5rem + var(--ws-safe-b));
+  width: 8.5rem;
+  height: 8.5rem;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02) 72%);
+  border: 1px solid var(--ws-line-2);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  pointer-events: auto;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.ws-stick.is-held { border-color: rgba(255, 255, 255, 0.5); background: radial-gradient(circle, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.03) 72%); }
+.ws-stick-thumb {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 3.5rem;
+  height: 3.5rem;
+  margin: -1.75rem 0 0 -1.75rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+  transition: transform 0.16s var(--ws-ease);
+  pointer-events: none;
+}
+.ws-stick.is-held .ws-stick-thumb { transition: none; background: rgba(255, 255, 255, 0.26); }
+.ws-stick-arrow { position: absolute; width: 0; height: 0; border: 5px solid transparent; opacity: 0.5; pointer-events: none; }
+.ws-stick-arrow--n { left: 50%; top: 9px; margin-left: -5px; border-top-width: 0; border-bottom-color: #fff; }
+.ws-stick-arrow--s { left: 50%; bottom: 9px; margin-left: -5px; border-bottom-width: 0; border-top-color: #fff; }
+.ws-stick-arrow--w { top: 50%; left: 9px; margin-top: -5px; border-left-width: 0; border-right-color: #fff; }
+.ws-stick-arrow--e { top: 50%; right: 9px; margin-top: -5px; border-right-width: 0; border-left-color: #fff; }
+
+.ws-act {
+  position: absolute;
+  right: calc(1.1rem + var(--ws-safe-r));
+  bottom: calc(1.9rem + var(--ws-safe-b));
+  width: 5.6rem;
+  height: 5.6rem;
+  display: grid;
+  place-items: center;
+  padding: 0.5rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--ws-line-2);
+  color: var(--text-2);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  line-height: 1.3;
+  text-transform: uppercase;
+  text-align: center;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  pointer-events: auto;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease, transform 0.18s var(--ws-ease);
+}
+.ws-act-label { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; max-width: 4.4rem; overflow-wrap: anywhere; }
+.ws-act.is-ready { background: #f5f5f5; color: #000; border-color: #fff; transform: scale(1.06); }
+.ws-act:active { transform: scale(0.96); }
+
+/* On-screen controls replace the hint strip; the Ask button steps up so it never meets Interact */
+.ws-app[data-tc="true"] .ws-explore-hint { display: none; }
+.ws-app[data-tc="true"][data-mode="explore"] .ws-ask-wrap { bottom: calc(9rem + var(--ws-safe-b)); }
+
+@media (max-height: 480px) {
+  .ws-stick { width: 6.6rem; height: 6.6rem; bottom: calc(0.9rem + var(--ws-safe-b)); }
+  .ws-stick-thumb { width: 2.8rem; height: 2.8rem; margin: -1.4rem 0 0 -1.4rem; }
+  .ws-act { width: 4.8rem; height: 4.8rem; bottom: calc(1rem + var(--ws-safe-b)); }
+  .ws-app[data-tc="true"][data-mode="explore"] .ws-ask-wrap { bottom: calc(6.4rem + var(--ws-safe-b)); }
+  .ws-resume { top: 66%; }
+}
 
 .ws-target {
   position: absolute;
@@ -881,6 +1013,23 @@ button.card-link:hover { background: rgba(255, 255, 255, 0.04); }
 }
 .ws-fade.is-label span { opacity: 1; }
 
+/* Arrival through the homepage portal: a warm bloom contracts into the room */
+.ws-arrive {
+  position: fixed;
+  inset: 0;
+  z-index: 290;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(255, 246, 232, 1) 0%, rgba(255, 220, 170, 0.82) 16%, rgba(255, 190, 120, 0.3) 38%, rgba(0, 0, 0, 0) 66%);
+}
+.ws-arrive.is-on { animation: ws-arrive 1.7s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+@keyframes ws-arrive {
+  0%   { opacity: 1; transform: scale(2.6); }
+  60%  { opacity: 0.55; }
+  100% { opacity: 0; transform: scale(0.4); }
+}
+html:not(.ws-via-portal) .ws-arrive { display: none; }
+
 /* ==========================================================================
    Overlays — extend the portfolio modal
    ========================================================================== */
@@ -1143,8 +1292,7 @@ html:not(.ws-js) .ws-text-switch { display: none; }
 
   .ws-explore-hint { flex-direction: column; align-items: stretch; gap: 0.45rem; width: calc(100vw - 1.5rem); padding: 0.6rem; }
   .ws-explore-keys { justify-content: center; }
-  .ws-app[data-touch="true"] .ws-explore-keys kbd,
-  .ws-app[data-touch="true"] #ws-lock { display: none; }
+  .ws-app[data-touch="true"] .ws-explore-keys kbd { display: none; }
 
   .ws-chooser-options { grid-template-columns: 1fr; }
 
@@ -1175,6 +1323,7 @@ html:not(.ws-js) .ws-text-switch { display: none; }
   html:not(.ws-motion-ok) .modal-card,
   html:not(.ws-motion-ok) .modal-backdrop { transition-duration: 0.01ms !important; }
 }
+html.ws-reduced .ws-resume,
 html.ws-reduced .ws-card,
 html.ws-reduced .ws-entry,
 html.ws-reduced .ws-chooser,

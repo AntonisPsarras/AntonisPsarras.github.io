@@ -14,6 +14,7 @@ import { Overlays } from './overlays.js';
 import { preloadDossiers } from './dossiers.js';
 import { Interaction, project } from './interact.js';
 import { CameraRig, Walker } from './controls.js';
+import { TouchPad } from './touchpad.js';
 import { Dialogue, PRIORITY } from './dialogue.js';
 import { Sound } from './audio.js';
 import { disposeTree } from './world/kit.js';
@@ -25,6 +26,8 @@ const ABORT = Symbol('abort');
 const ENTRY_POSE = [new THREE.Vector3(0, 1.6, 8.1), new THREE.Vector3(0, 1.42, 4.7)];
 const ARRIVAL = [new THREE.Vector3(0.3, 1.74, 3.95), new THREE.Vector3(-0.9, 1.0, -1.2)];
 const HOME = { x: 1.35, z: 0.95 };
+const REACH = 3.6;                       // metres: how far the dot (or E) can reach
+const LOOK = { slow: 0.6, normal: 1, fast: 1.6 };
 
 export async function start() {
   const app = new App();
@@ -56,14 +59,26 @@ class App {
     this.qualityChoice = 'auto';
     this.pointer = { down: null, x: 0, y: 0, hoverPending: false, hover: null, inside: false };
     this.locked = false;
+    this.lockFails = 0;
     this.touch = window.matchMedia('(pointer: coarse)').matches;
+    // On-screen controls: on by default for touch devices; ?controls=touch|off overrides (testing).
+    const cp = this.params.get('controls');
+    this.touchControls = cp === 'touch' ? true : cp === 'off' ? false : this.touch;
+    this.lookScale = LOOK.normal;
     this.lastStats = { calls: 0, triangles: 0, tier: 'high' };
+  }
+
+  /* Mouse-look needs a real mouse, working pointer lock, and no pad in the way. */
+  get usePointerLock() {
+    return !this.touch && !this.touchControls && this.lockFails < 3
+      && typeof this.renderer?.domElement.requestPointerLock === 'function';
   }
 
   /* ── Boot ─────────────────────────────────────────────────────────── */
   async init() {
     const ui = (this.ui = new UI(this.#handlers()));
     ui.setTouch(this.touch);
+    ui.setTouchControls(this.touchControls);
     ui.setMotion(this.reduced, this.mq.matches);
 
     const s1 = ui.loaderStep(1, 'INITIALIZING RENDERER');
@@ -149,6 +164,14 @@ class App {
       labelFor: (id) => this.labelFor(id),
     });
     this.walker = new Walker(this.rig, this.world.colliders, BOUNDS);
+    this.walker.onStep = (running) => this.sound.play(running ? 'run' : 'step');
+    this.pad = new TouchPad({
+      stick: document.getElementById('ws-stick'),
+      thumb: document.getElementById('ws-stick-thumb'),
+      act: document.getElementById('ws-act'),
+      onAxis: (x, y) => this.walker.setAxis(x, y),
+      onAct: () => this.interactAim(),
+    });
     this.dialogue = new Dialogue({
       bubble: ui.bubble,
       announce: (t) => ui.announce(t),
@@ -156,10 +179,12 @@ class App {
       onPose: (pose) => this.world.avatar.gesture(pose, pose === 'wave' ? 2.2 : 2),
     });
     this.monitor = new FrameMonitor({ onStep: (i) => this.autoDowngrade(i) });
+    this.world.shared.guardian.sound = (name) => this.sound.play(name);
 
     ui.buildLocations(LOCATIONS);
     ui.buildAsk(DIALOGUE.ask);
     ui.setQuality('auto', this.tier.label);
+    ui.setLook('normal');
     const av = this.world.avatar;
     av.teleport(HOME.x, HOME.z, Math.atan2(0 - HOME.x, 3.3 - HOME.z));
 
@@ -173,10 +198,10 @@ class App {
     document.addEventListener('mousemove', (e) => this.onLockedMove(e), sig);
     document.addEventListener('mousedown', (e) => this.onLockedClick(e), sig);
     document.addEventListener('pointerlockchange', () => this.onLockChange(), sig);
-    document.addEventListener('pointerlockerror', () => ui.toast('Mouse lock unavailable — drag to look instead'), sig);
+    document.addEventListener('pointerlockerror', () => this.onLockError(), sig);
     document.addEventListener('keydown', (e) => this.onKeyDown(e), sig);
     document.addEventListener('keyup', (e) => this.walker.key(e.code, false), sig);
-    window.addEventListener('blur', () => this.walker.keys.clear(), sig);
+    window.addEventListener('blur', () => { this.walker.keys.clear(); this.pad.reset(); }, sig);
     window.addEventListener('resize', () => this.onResize(), sig);
     document.addEventListener('visibilitychange', () => this.onVisibility(), sig);
     window.addEventListener('pagehide', () => this.renderer.setAnimationLoop(null), sig);
@@ -201,7 +226,10 @@ class App {
       onLocationStep: (d) => this.stepLocation(d),
       onObject: (id) => (id.startsWith('loc:') ? this.goLocation(id.slice(4)) : this.inspect(id)),
       onObjectHover: (id, on) => { if (!id.startsWith('loc:')) this.interaction?.setHot(on ? id : null); },
-      onLock: () => this.requestLock(),
+      onResume: () => this.tryLock({ explicit: true }),
+      onTouchControls: () => this.setTouchControls(!this.touchControls),
+      onPadShown: (on) => { if (!on) this.pad?.reset(); },
+      onLook: (key) => { this.lookScale = LOOK[key] ?? 1; this.ui.setLook(key); },
       onBubbleNext: () => this.dialogue.next(),
       onAsk: () => this.ui.setAskOpen(!this.ui.askOpen),
       onAskQuestion: (id) => this.ask(id),
@@ -214,6 +242,12 @@ class App {
   /* ── Entry & intro ────────────────────────────────────────────────── */
   enterEntry() {
     this.state = 'entry';
+    if (this.html.classList.contains('ws-via-portal') && !this.reduced) {
+      // Came through the homepage portal: the room opens out of a warm bloom,
+      // and the lens settles from very wide, as if exiting a wormhole.
+      this.arrival = { t: 0, dur: 1.5 };
+      this.ui.arrive();
+    }
     this.ui.setInside(false);
     this.ui.showEntry(true);
     this.interaction.setMarkers(['doorbell'], (id) => this.inspect(id));
@@ -221,9 +255,7 @@ class App {
   }
 
   ring() {
-    const bell = this.world.shared.doorbell;
-    bell.press();
-    this.sound.play('chime');
+    this.world.shared.guardian.ring();      // the cap presses, the portal's speaker answers, the chime plays, the panel logs it
     if (this.state === 'entry') { this.runIntro(); return; }
     this.ringCount++;
     const line = DIALOGUE.doorbell[Math.min(this.ringCount - 1, DIALOGUE.doorbell.length - 1)];
@@ -335,7 +367,19 @@ class App {
     this.ui.setLocation(null, []);
     this.interaction.setMarkers([], () => {});
     this.exploreMarkerClock = 0;
-    this.ui.announce('Explore mode. Use W A S D or the arrow keys to move, drag to look, click the floor to walk, and E to inspect what is in the centre of the view.');
+    this.tryLock();    // we are inside the click or key that asked for Explore, so this is allowed
+    if (this.touchControls) this.ui.toast('Pad to walk · drag to look · Interact for what’s under the dot', 4200);
+    this.ui.announce(this.touchControls
+      ? 'Explore mode. Use the on-screen pad to walk, drag to look, and the Interact button for whatever is under the dot.'
+      : 'Explore mode. Move the mouse to look, use W A S D or the arrow keys to walk, Shift to run, and E or a click to inspect what is under the dot. Escape frees the cursor.');
+  }
+
+  setTouchControls(on) {
+    this.touchControls = on;
+    this.ui.setTouchControls(on);
+    this.ui.toast(on ? 'On-screen controls on' : 'On-screen controls off', 1600);
+    if (on) { this.releaseLock(); this.lockFails = 0; }
+    else if (this.state === 'explore') this.tryLock();
   }
 
   goLocation(id) {
@@ -353,7 +397,7 @@ class App {
     const objects = loc.hotspots.map((h) => ({ id: h, label: this.labelFor(h) }));
     if (id === 'overview') objects.unshift({ id: 'loc:achievements', label: 'Achievements wall' });
     this.ui.setLocation(id, objects);
-    this.interaction.setMarkers(loc.hotspots, (hid) => this.inspect(hid));
+    this.interaction.setMarkers(loc.hotspots, (hid) => this.activateId(hid));
     this.flyOrCut(loc.position, loc.target);
     const meta = LOCATIONS.find((l) => l.id === id);
     if (meta) this.ui.announce(`${meta.label}. ${meta.summary}`);
@@ -385,7 +429,7 @@ class App {
       else return;
     }
     if (hs.kind === 'host') { this.ui.setAskOpen(true); return; }
-    if (id === 'doorbell') { this.ring(); return; }
+    if (id === 'doorbell') this.ring();           // press it, then look closer: the card has the bell and the story
     if (id === 'exit-door') { this.showCard(hs); this.state = 'inspect'; this.inspectId = id; return; }
     if (id === 'light-switch' && this.mode === 'explore') { this.toggleNight(); return; }
 
@@ -399,11 +443,11 @@ class App {
     this.state = 'inspect';
     this.inspectId = id;
     const zoneLoc = this.world.locations.get(hs.zone);
-    this.interaction.setMarkers(zoneLoc ? zoneLoc.hotspots : [id], (hid) => this.inspect(hid));
+    this.interaction.setMarkers(zoneLoc ? zoneLoc.hotspots : [id], (hid) => this.activateId(hid));
     this.interaction.setHot(id);
     this.ui.setHotObject(id);
 
-    const arrived = this.flyOrCut(hs.view.position, hs.view.target);
+    const arrived = this.flyOrCut(this.fitView(hs), hs.view.target);
     this.enterHotspot(hs);
     this.showCard(hs);
     this.react(hs);
@@ -453,12 +497,15 @@ class App {
       this.mode = 'explore';
       this.ui.setMode('explore');
       this.interaction.setMarkers([], () => {});
+      this.tryLock();    // works when Back was clicked; after Esc the resume prompt takes over
       const target = rp.position.clone().add(new THREE.Vector3(-Math.sin(rp.yaw) * Math.cos(rp.pitch), Math.sin(rp.pitch), -Math.cos(rp.yaw) * Math.cos(rp.pitch)));
       this.flyOrCut(rp.position, target).then(() => { if (this.state === 'explore') this.walker.setEnabled(true); });
     }
   }
 
   closeCard(restoreState = true) {
+    this.guardianOff?.();
+    this.guardianOff = null;
     if (this.inspectId) {
       const hs = this.world.hotspots.get(this.inspectId);
       if (hs && restoreState) this.leaveHotspot(hs);
@@ -489,6 +536,8 @@ class App {
 
   showCard(hs, focus = true) {
     const S = this.world.shared;
+    this.guardianOff?.();
+    this.guardianOff = null;
     const spec = { focus, controls: [], actions: [], step: false };
     const loc = this.world.locations.get(hs.zone);
     spec.step = !!loc && loc.hotspots.length > 1;
@@ -552,6 +601,12 @@ class App {
       case 'light-switch':
         ctl('night', 'Night mode', () => { this.toggleNight(); this.ui.updateControl('night', { pressed: this.night.on }); }, this.night.on);
         break;
+      case 'guardian-lamp':
+      case 'doorbell':
+      case 'guardian-panel':
+      case 'guardian-tablet':
+        this.guardianControls(hs.id, spec, ctl);
+        break;
       case 'exit-door':
         spec.actions.push({ label: 'Return to portfolio', primary: true, onClick: () => this.exit() });
         break;
@@ -563,14 +618,67 @@ class App {
     this.ui.showCard(spec);
   }
 
+  /* Card controls for the Guardian devices. They drive the same state machine as
+     the 3D buttons, and the chips follow it when anything else changes it. */
+  guardianControls(id, spec, ctl) {
+    const Gd = this.world.shared.guardian;
+    const ui = this.ui;
+    const sync = [];
+    if (id === 'guardian-lamp' || id === 'guardian-tablet') {
+      for (const m of ['auto', 'on', 'off']) ctl(`lamp-${m}`, `Lamp ${m}`, () => { Gd.setLamp(m); Gd.sound('switch'); }, Gd.lamp === m);
+      sync.push((G) => ['auto', 'on', 'off'].forEach((m) => ui.updateControl(`lamp-${m}`, { pressed: G.lamp === m })));
+    }
+    if (id === 'guardian-lamp') {
+      ctl('simulate', 'Simulate a visitor', () => Gd.simulate());
+      ctl('open-cam', 'Open the camera feed', () => { Gd.selectCam('door'); this.inspect('guardian-tablet'); });
+    }
+    if (id === 'doorbell') ctl('ring', 'Ring the bell', () => this.ring());
+    if (id === 'guardian-panel' || id === 'guardian-tablet') {
+      ctl('arm', Gd.armed ? 'Disarm' : 'Arm', () => Gd.toggleArmed());
+      ctl('elevated', 'Elevated mode', () => Gd.toggleMode(), Gd.mode === 'elevated');
+      sync.push((G) => {
+        ui.updateControl('arm', { label: G.armed ? 'Disarm' : 'Arm' });
+        ui.updateControl('elevated', { pressed: G.mode === 'elevated' });
+      });
+    }
+    if (id === 'guardian-panel') {
+      ctl('clear-code', 'Clear keypad', () => Gd.pressKey('*'));
+      spec.readout = Gd.readout();
+    }
+    if (id === 'guardian-tablet') {
+      ctl('cam-door', 'Door cam', () => Gd.selectCam('door'), Gd.cam === 'door');
+      ctl('cam-room', 'Room cam · demo', () => Gd.selectCam('room'), Gd.cam === 'room');
+      ctl('night-vision', 'Night vision', () => Gd.toggleNight(), Gd.night);
+      ctl('simulate', 'Simulate a visitor', () => Gd.simulate());
+      ctl('clear-events', 'Clear events', () => Gd.clearEvents());
+      sync.push((G) => {
+        ui.updateControl('cam-door', { pressed: G.cam === 'door' });
+        ui.updateControl('cam-room', { pressed: G.cam === 'room' });
+        ui.updateControl('night-vision', { pressed: G.night });
+      });
+      spec.readout = Gd.readout();
+    }
+    this.guardianOff = Gd.onChange((G) => sync.forEach((fn) => fn(G)));
+  }
+
   labelFor(id) {
     if (id.startsWith('award:')) {
       const a = AWARDS.find((x) => `award:${x.id}` === id);
       return a ? `${a.code} · ${a.plaque.charAt(0)}${a.plaque.slice(1).toLowerCase()}` : id;
     }
     if (id === 'antonis') return 'Antonis';
-    return HOTSPOTS[id]?.title || id;
+    return this.world.hotspots.get(id)?.label || HOTSPOTS[id]?.title || id;
   }
+
+  /* Anything with a `press` handler (keypad keys, buttons) acts in place;
+     everything else opens its inspect card. */
+  activate(hs) {
+    if (!hs || this.overlays.isOpen()) return;
+    if (hs.press && this.state !== 'intro') { hs.press(); return; }
+    this.inspect(hs.id);
+  }
+
+  activateId(id) { this.activate(this.world.hotspots.get(id)); }
 
   /* ── Ask / overlays / toggles ─────────────────────────────────────── */
   ask(id) {
@@ -663,18 +771,48 @@ class App {
     if (this.reduced) {
       return this.rig.flyTo(position, target, { cut: true, onCut: (on) => this.ui.fade(on) });
     }
-    return this.rig.flyTo(position, target, opts);
+    return this.rig.flyTo(position, target, { via: this.viaDoorway(position), ...opts });
   }
 
-  requestLock() {
-    if (this.mode !== 'explore') this.chooseMode('explore');
+  /* Hotspots with `fit` (metres of width that must stay in frame) back the camera
+     off along its line of sight on narrow screens, so a wide object isn't cropped. */
+  fitView(hs) {
+    const v = hs.view;
+    if (!hs.fit) return v.position;
+    const vfov = THREE.MathUtils.degToRad(this.baseFov || this.camera.fov);
+    const hfov = 2 * Math.atan(Math.tan(vfov / 2) * this.camera.aspect);
+    const need = (hs.fit * 0.5 * 1.25) / Math.tan(hfov / 2);
+    const dir = v.position.clone().sub(v.target);
+    const dist = dir.length();
+    return dist >= need ? v.position : v.target.clone().add(dir.multiplyScalar(need / dist));
+  }
+
+  /* Flights between the corridor and the room go through the doorway, not the wall. */
+  viaDoorway(to) {
+    const side = (z) => (z > 4.6 ? 1 : -1);
+    const from = this.camera.position;
+    if (side(from.z) === side(to.z)) return [];
+    const s = side(from.z);
+    return [new THREE.Vector3(0, 1.62, 4.6 + s * 1.0), new THREE.Vector3(0, 1.62, 4.6), new THREE.Vector3(0, 1.62, 4.6 - s * 0.9)];
+  }
+
+  /* Mouse-look: Explore captures the pointer so moving the mouse turns the
+     view, like any first-person game. Browsers only allow it from a click or
+     key press; whenever it is lost (Esc, a dialog, alt-tab) the resume prompt
+     offers it back. */
+  tryLock({ explicit = false } = {}) {
+    if (!this.usePointerLock || this.locked || this.state !== 'explore') return;
+    this.lockExplicit = explicit;      // only a click on the view or the prompt counts toward "unavailable"
     const canvas = this.renderer.domElement;
+    // The first request asks for raw mouse input; some platforms refuse that option, so retry plainly.
+    // Failures are counted from the pointerlockerror event (one per request), not from the promises.
+    const fallback = () => {
+      try { Promise.resolve(canvas.requestPointerLock()).catch(() => {}); } catch { /* the event reports it */ }
+    };
     try {
-      const p = canvas.requestPointerLock?.({ unadjustedMovement: true });
-      if (p && p.catch) p.catch(() => { try { canvas.requestPointerLock(); } catch { this.ui.toast('Mouse lock unavailable — drag to look instead'); } });
-    } catch {
-      this.ui.toast('Mouse lock unavailable — drag to look instead');
-    }
+      const p = canvas.requestPointerLock({ unadjustedMovement: true });
+      if (p && p.catch) p.catch(fallback);
+    } catch { fallback(); }
   }
 
   releaseLock() {
@@ -684,13 +822,51 @@ class App {
   onLockChange() {
     this.locked = document.pointerLockElement === this.renderer.domElement;
     this.ui.setLocked(this.locked);
-    if (this.locked) this.ui.toast('Mouse locked — press Esc to release', 2200);
+    if (this.locked) {
+      this.lockFails = 0;
+      this.pointer.down = null;
+      this.setHover(null);
+    } else {
+      this.walker.keys.clear();
+    }
+  }
+
+  onLockError() {
+    // One refusal is usually the browser's brief re-lock cooldown after Esc; the
+    // resume prompt stays up. Three explicit clicks in a row mean it isn't available here.
+    if (!this.lockExplicit) return;
+    this.lockExplicit = false;
+    if (++this.lockFails >= 3) this.ui.toast('Mouse capture unavailable here — drag to look instead', 3200);
+  }
+
+  /* The one ray everything in Explore uses: the label, E, a click and the
+     Interact button. The dot is the aim; only the cursor-fallback (no mouse
+     capture, no pad) aims at the cursor instead. */
+  aimNdc() {
+    if (this.locked || this.touchControls || this.touch || !this.pointer.inside) return [0, 0];
+    const r = this.renderer.domElement.getBoundingClientRect();
+    return [((this.pointer.x - r.left) / r.width) * 2 - 1, -((this.pointer.y - r.top) / r.height) * 2 + 1];
+  }
+
+  aimPick() {
+    const [x, y] = this.aimNdc();
+    return this.interaction.pick(x, y, { maxDistance: REACH });
+  }
+
+  interactAim() {
+    if (this.state !== 'explore' || this.overlays.isOpen()) return false;
+    const hit = this.aimPick();
+    if (!hit?.hotspot) return false;
+    this.activate(hit.hotspot);
+    return true;
   }
 
   /* ── Input ────────────────────────────────────────────────────────── */
   onPointerDown(e) {
     if (this.locked || this.overlays.isOpen()) return;
     if (e.button !== 0 && e.pointerType === 'mouse') return;
+    // A click in Explore takes the mouse; it never starts a drag.
+    if (this.state === 'explore' && e.pointerType === 'mouse' && this.usePointerLock) { this.tryLock({ explicit: true }); return; }
     this.pointer.down = { x: e.clientX, y: e.clientY, t: performance.now(), dragging: false, lx: e.clientX, ly: e.clientY };
     this.renderer.domElement.setPointerCapture?.(e.pointerId);
     if (this.ui.askOpen) this.ui.setAskOpen(false);
@@ -709,7 +885,7 @@ class App {
       const dx = e.clientX - d.lx, dy = e.clientY - d.ly;
       if (!d.dragging && Math.hypot(e.clientX - d.x, e.clientY - d.y) > 6) d.dragging = true;
       if (d.dragging) {
-        const k = 0.0042;
+        const k = (e.pointerType === 'touch' ? 0.0052 : 0.0042) * this.lookScale;
         if (this.state === 'explore') this.rig.look(dx * k, dy * k);
         else if (this.state === 'guided' || this.state === 'inspect') this.rig.nudge(dx * k, dy * k, this.state === 'inspect' ? 0.3 : 0.55, 0.22);
         this.ui.setCursor('grabbing');
@@ -729,20 +905,20 @@ class App {
     this.ui.setCursor('');
     if (d.dragging || performance.now() - d.t > 600) return;
     const hit = this.interaction.pickClient(e.clientX, e.clientY, this.renderer.domElement.getBoundingClientRect());
-    if (hit?.hotspot) this.inspect(hit.hotspot.id);
+    if (hit?.hotspot) this.activate(hit.hotspot);
     else if (hit?.floor && this.state === 'explore') this.walker.walkTo(hit.point);
     else if (hit?.floor && this.state === 'inspect' && this.returnPose?.mode === 'explore') { this.back(); }
   }
 
   onLockedMove(e) {
     if (!this.locked) return;
-    this.rig.look(-e.movementX * 0.0022, -e.movementY * 0.0022);
+    const k = 0.0022 * this.lookScale;
+    this.rig.look(-e.movementX * k, -e.movementY * k);
   }
 
   onLockedClick(e) {
     if (!this.locked || e.button !== 0) return;
-    const hit = this.interaction.pick(0, 0, { maxDistance: 6 });
-    if (hit?.hotspot) this.inspect(hit.hotspot.id);
+    this.interactAim();
   }
 
   setHover(hs) {
@@ -773,21 +949,21 @@ class App {
       return;
     }
     if (!inside) return;
-    if ((e.key === 'e' || e.key === 'E' || (e.key === 'Enter' && !onControl)) && this.state === 'explore') {
-      const hit = this.interaction.pick(0, 0, { maxDistance: 6 });
-      if (hit?.hotspot) { e.preventDefault(); this.inspect(hit.hotspot.id); }
+    if (this.state === 'explore' && !e.repeat && (e.code === 'KeyE' || e.code === 'KeyF' || (e.key === 'Enter' && !onControl))) {
+      if (this.interactAim()) e.preventDefault();
       return;
     }
     if (e.key === ' ' && !onControl && this.dialogue.active) { e.preventDefault(); this.dialogue.next(); return; }
-    switch (e.key) {
-      case 'g': case 'G': this.chooseMode('guided'); break;
-      case 'x': case 'X': this.chooseMode('explore'); break;
-      case 'l': case 'L': this.toggleNight(); break;
-      case 'm': case 'M': this.toggleSound(); break;
-      case '?': this.overlays.openHelp(); break;
-      case '`': this.toggleDiag(); break;
+    // Letters go by physical key (e.code), so they work on any keyboard layout, Greek included.
+    switch (e.code) {
+      case 'KeyG': this.chooseMode('guided'); return;
+      case 'KeyX': this.chooseMode('explore'); return;
+      case 'KeyL': this.toggleNight(); return;
+      case 'KeyM': this.toggleSound(); return;
+      case 'Backquote': this.toggleDiag(); return;
       default: break;
     }
+    if (e.key === '?') this.overlays.openHelp();
   }
 
   onResize() {
@@ -839,6 +1015,19 @@ class App {
     cam.updateProjectionMatrix();
   }
 
+  /* Wormhole exit: the field of view eases from very wide back to normal. */
+  stepArrival(dt) {
+    const a = this.arrival;
+    const base = this.baseFov || this.camera.fov;
+    a.t += dt;
+    if (this.state !== 'entry') a.t = a.dur;           // leaving the entry view ends it at once
+    const p = Math.min(1, a.t / a.dur);
+    const e = 1 - Math.pow(1 - p, 3);
+    this.camera.fov = p >= 1 ? base : Math.min(110, base * (1 + 0.9 * (1 - e)));
+    this.camera.updateProjectionMatrix();
+    if (p >= 1) { this.arrival = null; this.viewShiftApplied = null; }   // let the view-shift maths take over again
+  }
+
   onVisibility() {
     if (document.hidden) {
       this.renderer.setAnimationLoop(null);
@@ -873,10 +1062,12 @@ class App {
     this.rig.update(dt);
     if (!overlay) this.walker.update(dt);
     this.applyViewShift(dt, w, h);
+    if (this.arrival) this.stepArrival(dt);
 
     const frame = {
       reduced: this.reduced, stats: { ...this.lastStats, tier: this.activeTier || this.tier.name },
       inspecting: this.inspectId, setReadout: (s) => this.ui.setReadout(s), camera: this.camera,
+      renderer: this.renderer, scene: this.scene, stateName: this.state,
     };
     world.update(dt, t, frame);
     world.avatar.update(dt, t, this.reduced);
@@ -908,28 +1099,45 @@ class App {
         this.exploreMarkerClock = 0.3;
         const near = [];
         for (const hs of world.hotspots.values()) {
-          if (hs.kind === 'host') continue;
+          if (hs.kind === 'host' || hs.quiet) continue;
           if (hs.anchor.distanceTo(this.camera.position) < 2.6) near.push(hs.id);
         }
         const key = near.join('|');
-        if (key !== this.nearKey) { this.nearKey = key; this.interaction.setMarkers(near, (id) => this.inspect(id)); }
+        if (key !== this.nearKey) { this.nearKey = key; this.interaction.setMarkers(near, (id) => this.activateId(id)); }
         const pn = world.shared.printerNear;
         if (pn && Math.hypot(pn.x - this.camera.position.x, pn.z - this.camera.position.z) < 0.95) this.dialogue.comment('printerNear', DIALOGUE.comments.printerNear, { force: true });
       }
-      const target = this.interaction.pick(0, 0, { maxDistance: 6 });
-      const hs = target?.hotspot;
-      if (this.locked || this.touch || !this.pointer.inside) this.ui.setTarget(hs ? this.labelFor(hs.id) : null, w / 2, h / 2);
+      // What the dot is on: the label, E, a click and the Interact button all agree on it.
+      const [ax, ay] = this.aimNdc();
+      const aimed = overlay ? null : this.interaction.pick(ax, ay, { maxDistance: REACH })?.hotspot || null;
+      const label = aimed ? this.labelFor(aimed.id) : null;
+      const centred = ax === 0 && ay === 0;
+      this.ui.setTarget(label, centred ? w / 2 : this.pointer.x, centred ? h / 2 : this.pointer.y);
+      this.ui.setInteract(label);
+      this.interaction.setHot(aimed?.id || null);
+      if (!this.pointer.down && !this.locked) this.ui.setCursor(!this.usePointerLock && !this.touch ? (aimed ? 'pointer' : 'walk') : '');
+      this.wasExploring = true;
     } else {
       this.nearKey = null;
+      if (this.wasExploring) {
+        this.wasExploring = false;
+        this.ui.setTarget(null);
+        this.ui.setInteract(null);
+      }
     }
+
+    // Pad and resume prompt follow the state; both are cheap no-ops when nothing changed.
+    const exploring = this.state === 'explore';
+    this.ui.setPad(exploring && this.touchControls && !overlay);
+    this.ui.setResume(exploring && this.usePointerLock && !this.locked && !overlay && !this.rig.busy);
+    this.walker.reduced = this.reduced;
 
     // hover (mouse only), once per frame at most
     if (this.pointer.hoverPending && !this.pointer.down && !this.locked && !overlay) {
       this.pointer.hoverPending = false;
-      if (['guided', 'inspect', 'explore', 'entry', 'chooser'].includes(this.state)) {
+      if (['guided', 'inspect', 'entry', 'chooser'].includes(this.state)) {
         const hit = this.interaction.pickClient(this.pointer.x, this.pointer.y, this.renderer.domElement.getBoundingClientRect());
         this.setHover(hit?.hotspot || null);
-        if (this.state === 'explore') this.ui.setTarget(hit?.hotspot ? this.labelFor(hit.hotspot.id) : null, this.pointer.x, this.pointer.y);
       }
     }
 

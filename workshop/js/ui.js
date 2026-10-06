@@ -15,6 +15,9 @@ export class UI {
     this.target = $('ws-target');
     this.reticle = $('ws-reticle');
     this.labelsEl = $('ws-labels');
+    this.padEl = $('ws-pad');
+    this.actEl = $('ws-act');
+    this.resumeEl = $('ws-resume');
     this.controls = new Map();
     this.labelEls = new Map();
     this.#bind();
@@ -38,7 +41,8 @@ export class UI {
     on('ws-card-next', () => h.onCardStep(1));
     on('ws-prev-loc', () => h.onLocationStep(-1));
     on('ws-next-loc', () => h.onLocationStep(1));
-    on('ws-lock', () => h.onLock());
+    on('ws-touchctl', () => h.onTouchControls());
+    on('ws-resume', () => h.onResume());
     on('ws-bubble-next', () => h.onBubbleNext());
     on('ws-ask', () => h.onAsk());
     document.querySelectorAll('[data-exit]').forEach((a) => a.addEventListener('click', (e) => {
@@ -47,6 +51,7 @@ export class UI {
       h.onExit();
     }));
     document.querySelectorAll('#ws-quality [data-quality]').forEach((b) => b.addEventListener('click', () => h.onQuality(b.dataset.quality)));
+    document.querySelectorAll('#ws-look [data-look]').forEach((b) => b.addEventListener('click', () => h.onLook(b.dataset.look)));
     on('ws-motion', () => h.onMotion());
   }
 
@@ -55,6 +60,42 @@ export class UI {
   setTouch(on) { this.app.dataset.touch = String(on); }
   setCursor(type) { if (this.app.dataset.cursor !== type) this.app.dataset.cursor = type || ''; }
   setLocked(on) { this.app.dataset.locked = String(on); }
+
+  /* On-screen controls: auto-enabled on touch devices, toggled by the Pad chip. */
+  setTouchControls(on) {
+    this.app.dataset.tc = String(on);
+    $('ws-touchctl').setAttribute('aria-pressed', String(on));
+  }
+
+  /* The pad itself is only shown while exploring with controls on. */
+  setPad(on) {
+    if (this.padShown === on) return;
+    this.padShown = on;
+    this.padEl.hidden = !on;
+    this.h.onPadShown?.(on);
+  }
+
+  /* "Click to look around": shown whenever Explore wants the mouse but doesn't have it. */
+  setResume(on) {
+    if (this.resumeShown === on) return;
+    this.resumeShown = on;
+    this.resumeEl.hidden = !on;
+  }
+
+  /* Interact button label (touch). A null label dims the button. */
+  setInteract(label) {
+    const b = this.actEl;
+    const text = label || 'Interact';
+    if (b.dataset.label === text) return;
+    b.dataset.label = text;
+    b.querySelector('.ws-act-label').textContent = text;
+    b.classList.toggle('is-ready', !!label);
+    b.setAttribute('aria-label', label ? `Interact: ${label}` : 'Interact');
+  }
+
+  setLook(key) {
+    document.querySelectorAll('#ws-look [data-look]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.look === key)));
+  }
 
   setMode(mode) {
     this.app.dataset.mode = mode;
@@ -435,6 +476,17 @@ export class UI {
   }
 
   loaderDone() { $('ws-loader').classList.add('is-done'); }
+
+  /* Arrival bloom (only exists in the DOM flow when ?via=portal). */
+  arrive() {
+    const el = $('ws-arrive');
+    if (!el) return;
+    el.classList.remove('is-on');
+    void el.offsetWidth;                  // restart the animation
+    el.classList.add('is-on');
+    clearTimeout(this.arriveTimer);
+    this.arriveTimer = setTimeout(() => el.classList.remove('is-on'), 1900);
+  }
 
   fade(on, label = null) {
     const f = $('ws-fade');

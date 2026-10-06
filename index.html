@@ -79,6 +79,17 @@
       <!-- ── Slide 1 : Hero ─────────────────────────────────────────── -->
       <section class="slide slide--hero" id="hero-sec" aria-labelledby="hero-title">
         <canvas id="gravity-canvas" aria-hidden="true"></canvas>
+
+        <!-- The Workshop's entrance: a portal at the centre of the hero's orbits.
+             Plain link underneath (works without JS); script.js draws and animates it. -->
+        <a href="workshop/" class="workshop-portal" id="workshop-portal" data-workshop-entry
+           aria-label="Enter the Workshop: step through the portal">
+          <canvas class="portal-canvas" id="portal-canvas" aria-hidden="true"></canvas>
+          <span class="portal-caption" aria-hidden="true">
+            Step through <span class="portal-caption-arrow">→</span>
+          </span>
+        </a>
+
         <div class="slide-content">
           <p class="hero-label" style="--stagger: 1">LOG_ENTRY // 00</p>
           <h1 class="hero-title" id="hero-title" style="--stagger: 2">Anthony (Antonis) Psarras</h1>

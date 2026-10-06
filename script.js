@@ -807,32 +807,363 @@ function initScrollReveal() {
 }
 
 /* ==========================================================================
-   Workshop entrance — orbits converge, the page goes dark, then navigate.
-   Plain links underneath: new-tab / modified clicks behave normally, and
-   reduced-motion visitors go straight there. Nothing is preloaded here.
+   The portal — the Workshop's entrance, at the centre of the hero's orbits.
+
+   A wormhole mouth (a perspective tunnel of rings and spiral arms with a warm
+   light at the far end) inside a slowly turning time dial: ticks, an orbiting
+   dot and a ring of text. Everything is Canvas 2D; the homepage never loads
+   Three.js. The same drawing routine runs twice: on the small canvas inside
+   the link, and — when you jump — on a full-screen one that dives into the
+   tunnel, so the hand-over is seamless.
+   ========================================================================== */
+function initWorkshopPortal() {
+  const root = document.getElementById('workshop-portal');
+  const canvas = document.getElementById('portal-canvas');
+  if (!root || !canvas || !canvas.getContext) return null;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return null;
+
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const scrollRoot = document.querySelector('.scroll-container');
+  const TAU = Math.PI * 2;
+  const RING_TEXT = ' LOG_ENTRY // WORKSHOP // SYS_00 // STEP THROUGH // LOG_ENTRY // WORKSHOP // SYS_00 // STEP THROUGH // ';
+  const ARMS = 5;
+  const RINGS = 22;
+  const rand = (i) => { const x = Math.sin(i * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+  const STREAKS = Array.from({ length: 150 }, (_, i) => ({ a: rand(i) * TAU, p: rand(i + 400), l: 0.35 + rand(i + 900) }));
+
+  /* One shared animation state; `dive` is 0 while idle and runs 0 → 1 during the jump. */
+  const st = { flow: 0.37, angle: 0, dial: 0, dot: 0, text: 0, hover: 0, px: 0, py: 0, tx: 0, ty: 0, dive: 0 };
+  let hovering = false, visible = true, raf = 0, last = 0, size = 0, dpr = 1, jumping = false;
+
+  function drawPortal(g, W, H, cx, cy, h, s) {
+    const dive = s.dive;
+    const grow = 1 + 46 * dive * dive * dive;            // the mouth swells past the screen edges
+    const R = h * 0.66 * grow;                            // mouth radius
+    const calm = Math.max(0, 1 - dive * 1.7);             // dial and text leave early in the dive
+    const flare = s.hover * 0.45 + (dive < 0.3 ? Math.sin((dive / 0.3) * Math.PI) : 0);
+    g.clearRect(0, 0, W, H);
+
+    // halo around the mouth
+    const halo = g.createRadialGradient(cx, cy, R * 0.55, cx, cy, Math.min(h * 1.02 * grow, Math.max(W, H)));
+    halo.addColorStop(0, `rgba(255,236,206,${0.16 + 0.12 * s.hover})`);
+    halo.addColorStop(1, 'rgba(255,236,206,0)');
+    g.fillStyle = halo;
+    g.fillRect(0, 0, W, H);
+
+    // ── tunnel, clipped to the mouth ──
+    g.save();
+    g.beginPath();
+    g.arc(cx, cy, R, 0, TAU);
+    g.clip();
+    g.fillStyle = '#030303';
+    g.fillRect(cx - R, cy - R, R * 2, R * 2);
+
+    const ox = s.px * R * 0.24, oy = s.py * R * 0.24;      // deeper rings shift more: parallax
+    const at = (u) => [cx - ox * (1 - u), cy - oy * (1 - u)];
+    g.lineCap = 'round';
+
+    for (let i = 0; i < RINGS; i++) {
+      const u = ((i + s.flow) / RINGS) % 1;
+      const r = R * Math.pow(u, 2.1);
+      if (r < 1.2) continue;
+      const [x, y] = at(u);
+      g.beginPath();
+      g.arc(x, y, r, 0, TAU);
+      g.strokeStyle = `rgba(255,244,228,${(0.05 + 0.5 * Math.pow(1 - u, 0.9)) * (0.55 + 0.45 * u)})`;
+      g.lineWidth = 0.6 + 1.5 * u;
+      g.stroke();
+    }
+
+    g.lineWidth = 1;
+    for (let a = 0; a < ARMS; a++) {
+      g.beginPath();
+      for (let j = 0; j <= 44; j++) {
+        const u = j / 44;
+        const r = R * Math.pow(u, 2.1);
+        const th = (a / ARMS) * TAU + s.angle + (1 - u) * 3.3;
+        const [x, y] = at(u);
+        const px = x + Math.cos(th) * r, py = y + Math.sin(th) * r;
+        if (j === 0) g.moveTo(px, py); else g.lineTo(px, py);
+      }
+      g.strokeStyle = 'rgba(255,240,220,0.2)';
+      g.stroke();
+    }
+
+    // stars rushing past; long streaks during the dive
+    g.strokeStyle = 'rgba(255,250,240,0.85)';
+    const reach = Math.max(W, H) * 0.9;
+    for (const sp of STREAKS) {
+      const p = (sp.p + s.flow * 0.24 * (1 + dive * 6)) % 1;
+      const r1 = R * 0.08 + p * p * R * 0.98;
+      const r2 = r1 + (1.5 + sp.l * 8) * (1 + dive * 28) * (0.3 + p) * (h / 150);
+      if (dive < 0.02 && sp.l < 0.55) continue;         // fewer, subtler stars while idle
+      const [x, y] = at(Math.min(1, p));
+      g.globalAlpha = (0.12 + 0.55 * p) * (dive < 0.02 ? 0.55 : 0.4 + dive);
+      g.lineWidth = 0.7 + dive * 1.8 * p;
+      g.beginPath();
+      g.moveTo(x + Math.cos(sp.a) * r1, y + Math.sin(sp.a) * r1);
+      g.lineTo(x + Math.cos(sp.a) * Math.min(r2, reach), y + Math.sin(sp.a) * Math.min(r2, reach));
+      g.stroke();
+    }
+    g.globalAlpha = 1;
+
+    // the light at the far end
+    const pulse = 1 + 0.08 * Math.sin(s.dot * 2.3);
+    const cr = R * (0.46 + dive * 1.4) * pulse;
+    const [lx, ly] = at(0);
+    const core = g.createRadialGradient(lx, ly, 0, lx, ly, cr);
+    core.addColorStop(0, 'rgba(255,248,236,1)');
+    core.addColorStop(0.25, `rgba(255,226,184,${0.78 + 0.2 * s.hover})`);
+    core.addColorStop(0.6, 'rgba(255,196,130,0.22)');
+    core.addColorStop(1, 'rgba(255,196,130,0)');
+    g.fillStyle = core;
+    g.fillRect(cx - R, cy - R, R * 2, R * 2);
+    if (dive > 0.8) {                                    // arrival flash
+      g.fillStyle = `rgba(255,246,232,${Math.min(1, (dive - 0.8) / 0.18)})`;
+      g.fillRect(0, 0, W, H);
+    }
+    g.restore();
+
+    // ── mouth rim, with a slight chromatic fringe ──
+    if (R < Math.max(W, H)) {
+      g.save();
+      g.globalCompositeOperation = 'lighter';
+      const rim = (dx, color, width) => {
+        g.beginPath();
+        g.arc(cx + dx, cy, R, 0, TAU);
+        g.strokeStyle = color;
+        g.lineWidth = width;
+        g.stroke();
+      };
+      rim(-1.3, `rgba(150,190,255,${0.32 + 0.2 * flare})`, 1.2 + flare);
+      rim(1.3, `rgba(255,185,130,${0.32 + 0.2 * flare})`, 1.2 + flare);
+      rim(0, `rgba(255,255,255,${0.8 + 0.2 * flare})`, 1.4 + 2.4 * flare);
+      g.restore();
+      g.beginPath();
+      g.arc(cx, cy, R * 1.07, 0, TAU);
+      g.strokeStyle = `rgba(255,255,255,${0.16 * calm})`;
+      g.lineWidth = 1;
+      g.stroke();
+    }
+
+    if (calm <= 0) return;
+
+    // ── the dial: ticks, an orbiting dot, a ring of text ──
+    g.save();
+    g.globalAlpha = calm;
+    const rt = h * 0.8 * grow;
+    g.lineWidth = 1;
+    for (let i = 0; i < 60; i++) {
+      const major = i % 5 === 0;
+      const a = (i / 60) * TAU + s.dial;
+      const r0 = rt, r1 = rt + h * (major ? 0.075 : 0.035);
+      g.strokeStyle = `rgba(255,255,255,${major ? 0.62 : 0.26})`;
+      g.beginPath();
+      g.moveTo(cx + Math.cos(a) * r0, cy + Math.sin(a) * r0);
+      g.lineTo(cx + Math.cos(a) * r1, cy + Math.sin(a) * r1);
+      g.stroke();
+    }
+    const orbit = (rad, a, dotR, trail) => {
+      g.beginPath();
+      g.arc(cx, cy, rad, a - trail, a);
+      g.strokeStyle = 'rgba(255,255,255,0.3)';
+      g.lineWidth = 1.2;
+      g.stroke();
+      g.beginPath();
+      g.arc(cx + Math.cos(a) * rad, cy + Math.sin(a) * rad, dotR, 0, TAU);
+      g.fillStyle = 'rgba(255,244,226,0.95)';
+      g.fill();
+    };
+    orbit(h * 0.74 * grow, s.dot, 2.6, 0.9);
+    orbit(h * 0.895 * grow, -s.dot * 0.55 + 1.8, 1.9, 0.55);
+
+    g.fillStyle = 'rgba(255,255,255,0.55)';
+    g.font = `500 ${(h * 0.056).toFixed(1)}px "JetBrains Mono", ui-monospace, monospace`;
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    const step = TAU / RING_TEXT.length;
+    for (let i = 0; i < RING_TEXT.length; i++) {
+      const ch = RING_TEXT[i];
+      if (ch === ' ') continue;
+      g.save();
+      g.translate(cx, cy);
+      g.rotate(i * step + s.text);
+      g.fillText(ch, 0, -h * 0.955 * grow);
+      g.restore();
+    }
+    g.restore();
+  }
+
+  function fit() {
+    const rect = root.getBoundingClientRect();
+    size = Math.round(rect.width);
+    if (!size) return;
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(size * dpr);
+    canvas.height = Math.round(size * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    paint();
+  }
+
+  function paint() {
+    if (!size) return;
+    drawPortal(ctx, size, size, size / 2, size / 2, size / 2, st);
+  }
+
+  function advance(dt, speed) {
+    st.flow += dt * 0.5 * speed;
+    st.angle += dt * 0.32 * speed;
+    st.dial -= dt * 0.055 * (1 + st.hover * 2.4);
+    st.dot += dt * 0.6 * speed;
+    st.text += dt * 0.035 * (1 + st.hover * 2);
+    const k = Math.min(1, dt * 5);
+    st.px += (st.tx - st.px) * k;
+    st.py += (st.ty - st.py) * k;
+    st.hover += ((hovering ? 1 : 0) - st.hover) * Math.min(1, dt * 6);
+  }
+
+  function frame(now) {
+    raf = 0;
+    const dt = Math.min(0.05, Math.max(0, (now - last) / 1000));
+    last = now;
+    advance(dt, 1 + st.hover * 1.6);
+    paint();
+    schedule();
+  }
+
+  function schedule() {
+    if (raf || jumping || reduce.matches || !visible || document.hidden) return;
+    last = performance.now();
+    raf = requestAnimationFrame(frame);
+  }
+
+  function halt() {
+    if (raf) cancelAnimationFrame(raf);
+    raf = 0;
+  }
+
+  /* hover / focus / pointer parallax */
+  root.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') hovering = true; });
+  root.addEventListener('pointerleave', () => { hovering = false; st.tx = st.ty = 0; });
+  root.addEventListener('pointermove', (e) => {
+    if (e.pointerType !== 'mouse') return;
+    const r = root.getBoundingClientRect();
+    st.tx = Math.max(-1, Math.min(1, (e.clientX - (r.left + r.width / 2)) / (r.width / 2)));
+    st.ty = Math.max(-1, Math.min(1, (e.clientY - (r.top + r.height / 2)) / (r.height / 2)));
+  });
+  root.addEventListener('focus', () => { hovering = true; });
+  root.addEventListener('blur', () => { hovering = false; });
+
+  if ('ResizeObserver' in window) new ResizeObserver(fit).observe(root);
+  window.addEventListener('resize', fit);
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver((entries) => {
+      visible = entries.some((en) => en.isIntersecting);
+      if (visible) schedule(); else halt();
+    }, { root: scrollRoot, threshold: 0.01 }).observe(root);
+  }
+  document.addEventListener('visibilitychange', () => { if (document.hidden) halt(); else schedule(); });
+  const onMotion = () => { if (reduce.matches) { halt(); paint(); } else schedule(); };
+  if (reduce.addEventListener) reduce.addEventListener('change', onMotion);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(paint);
+
+  fit();
+  schedule();
+
+  /* ── The jump ─────────────────────────────────────────────────────────── */
+  let fx = null;
+
+  function jump(go) {
+    if (jumping) return;
+    jumping = true;
+    halt();
+    const rect = root.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2, h = rect.width / 2;
+    const W = window.innerWidth, H = window.innerHeight;
+    const fdpr = Math.min(window.devicePixelRatio || 1, 1.25);
+    fx = document.createElement('canvas');
+    fx.className = 'portal-fx';
+    fx.setAttribute('aria-hidden', 'true');
+    fx.width = Math.round(W * fdpr);
+    fx.height = Math.round(H * fdpr);
+    document.body.appendChild(fx);
+    const g = fx.getContext('2d');
+    g.setTransform(fdpr, 0, 0, fdpr, 0, 0);
+    drawPortal(g, W, H, cx, cy, h, st);          // the first frame matches the small portal exactly
+    root.classList.add('is-diving');
+    document.body.classList.add('is-portal-jump');
+
+    const DUR = 1150;
+    const t0 = performance.now();
+    let veil = false, last2 = t0;
+    function step(now) {
+      const k = Math.min(1, (now - t0) / DUR);
+      const dt = Math.min(0.05, (now - last2) / 1000);
+      last2 = now;
+      st.dive = Math.pow(k, 2.2);
+      advance(dt, 1 + 14 * st.dive * st.dive);
+      drawPortal(g, W, H, cx, cy, h, st);
+      if (k > 0.78 && !veil) { veil = true; document.body.classList.add('is-entering-workshop'); }
+      if (k < 1) { requestAnimationFrame(step); return; }
+      setTimeout(go, 380);
+    }
+    requestAnimationFrame(step);
+  }
+
+  /* Back/forward cache: come back to a calm page, not the middle of a jump. */
+  function reset() {
+    if (!jumping && !fx) return;
+    jumping = false;
+    st.dive = 0;
+    if (fx) { fx.remove(); fx = null; }
+    root.classList.remove('is-diving');
+    document.body.classList.remove('is-portal-jump', 'is-entering-workshop');
+    paint();
+    schedule();
+  }
+
+  return { jump, reset };
+}
+
+/* ==========================================================================
+   Workshop entrance — every "Workshop" link on the page jumps through the
+   portal, then navigates. They are plain links underneath: new-tab / modified
+   clicks behave normally, and reduced-motion visitors go straight there.
+   The Workshop only checks ?via=portal to play a short arrival flourish.
+   Nothing is preloaded here.
    ========================================================================== */
 function initWorkshopEntry() {
   const links = document.querySelectorAll('[data-workshop-entry]');
   if (!links.length) return;
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const portal = initWorkshopPortal();
 
   links.forEach((link) => {
     link.addEventListener('click', (e) => {
       if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
       e.preventDefault();
-      const href = link.href;
+      const url = new URL(link.href, window.location.href);
       if (reduce.matches) {
-        window.location.href = href;
+        window.location.href = url.href;
+        return;
+      }
+      if (portal) {
+        url.searchParams.set('via', 'portal');
+        portal.jump(() => { window.location.href = url.href; });
         return;
       }
       document.body.classList.add('is-entering-workshop');
-      setTimeout(() => { window.location.href = href; }, 680);
+      setTimeout(() => { window.location.href = url.href; }, 680);
     });
   });
 
   /* Coming back with the browser's Back button restores this page from the
      back/forward cache — make sure it isn't still dark. */
-  window.addEventListener('pageshow', () => document.body.classList.remove('is-entering-workshop'));
+  window.addEventListener('pageshow', () => {
+    document.body.classList.remove('is-entering-workshop');
+    if (portal) portal.reset();
+  });
 }
 
 /* ==========================================================================
