@@ -1126,6 +1126,27 @@ button, a { font: inherit; }
   transform: scale(1.02);
 }
 
+/* Placeholder shown until a slide's image arrives */
+.glass-image-wrapper.is-loading::before {
+  content: '';
+  position: absolute;
+  inset: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  animation: gallery-loading 1.4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes gallery-loading {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-image-wrapper.is-loading::before { animation: none; }
+}
+
 @media (max-width: 600px) {
   .carousel-image { height: 200px; }
   .glass-image-wrapper { min-height: 200px; }

@@ -266,26 +266,26 @@
 
           <div class="projects-grid">
 
-            <!-- Functional Wind Turbine ----------------------------------- -->
-            <article class="project-card reveal-on-scroll" style="--stagger: 6" data-project="wt" aria-label="Functional Wind Turbine System">
-              <img class="card-bg" src="turbine1.png" alt="Functional Wind Turbine System hardware assembly" loading="lazy" />
-              
+            <!-- Wind Turbine Project -------------------------------------- -->
+            <article class="project-card reveal-on-scroll" style="--stagger: 6" data-project="wt" aria-label="Wind Turbine Project">
+              <img class="card-bg" src="turbine1.webp" alt="Wind Turbine Project: two printed turbines on a balcony railing" loading="lazy" />
+
               <div class="card-content-wrapper">
                 <div class="card-meta-row">
                   <span class="card-sys-id">SYS_03 // HARDWARE</span>
-                  <span class="card-status-text">Production Remix</span>
+                  <span class="card-status-text">Open Source</span>
                 </div>
 
                 <div class="card-title-group">
-                  <h3 class="card-title">Wind Turbine System</h3>
-                  <p class="card-tagline">Functional Balcony Power Generator</p>
+                  <h3 class="card-title">Wind Turbine Project</h3>
+                  <p class="card-tagline">Balcony Wind Turbine That Charges an 18650 Cell</p>
                 </div>
 
                 <div class="card-chips" aria-label="Technology stack">
                   <span class="chip">Hardware</span>
                   <span class="chip">3D Printing</span>
                   <span class="chip">Electronics</span>
-                  <span class="chip">Power-Gen</span>
+                  <span class="chip">Power Electronics</span>
                   <span class="chip">FDM-CAD</span>
                 </div>
 
@@ -679,29 +679,55 @@
 
           </div><!-- /mcontent-sl -->
 
-          <!-- Wind Turbine System -------------------------------------- -->
+          <!-- Wind Turbine Project ------------------------------------- -->
           <div class="modal-content" id="mcontent-wt" aria-hidden="true">
 
             <div class="modal-meta-row">
               <span class="modal-sys-id">SYS_03 // HARDWARE</span>
-              <a href="https://makerworld.com/en/models/2967248-wind-turbine-project-functional-simple-turbine#profileId-3327133"
-                 target="_blank" rel="noopener noreferrer"
-                 class="card-status-badge">
-                MakerWorld
-                <span class="icon" data-icon="arrow-up-right" aria-hidden="true"></span>
-              </a>
+              <div class="modal-meta-badges">
+                <a href="https://github.com/AntonisPsarras/wind-turbine-project"
+                   target="_blank" rel="noopener noreferrer"
+                   class="card-status-badge">
+                  GitHub
+                  <span class="icon" data-icon="github" aria-hidden="true"></span>
+                </a>
+                <a href="https://antonispsarras.github.io/wind-turbine-project/"
+                   target="_blank" rel="noopener noreferrer"
+                   class="card-status-badge">
+                  Build Guide
+                  <span class="icon" data-icon="arrow-up-right" aria-hidden="true"></span>
+                </a>
+                <a href="https://makerworld.com/en/models/2967248-wind-turbine-project-functional-simple-turbine#profileId-3327133"
+                   target="_blank" rel="noopener noreferrer"
+                   class="card-status-badge">
+                  MakerWorld
+                  <span class="icon" data-icon="arrow-up-right" aria-hidden="true"></span>
+                </a>
+              </div>
             </div>
 
             <div class="modal-title-group">
-              <h3 class="modal-title">Functional Wind Turbine System</h3>
-              <p class="modal-tagline">Balcony-Ready Power-Generating System & Off-Grid Charger</p>
+              <h3 class="modal-title">Wind Turbine Project</h3>
+              <p class="modal-tagline">Balcony Wind Turbine That Charges an 18650 Cell</p>
             </div>
 
             <div class="modal-links">
-              <a href="https://makerworld.com/en/models/2967248-wind-turbine-project-functional-simple-turbine#profileId-3327133"
+              <a href="https://github.com/AntonisPsarras/wind-turbine-project"
+                 target="_blank" rel="noopener noreferrer"
+                 class="card-link">
+                <span class="icon" data-icon="github" aria-hidden="true"></span>
+                GitHub
+              </a>
+              <a href="https://antonispsarras.github.io/wind-turbine-project/"
                  target="_blank" rel="noopener noreferrer"
                  class="card-link">
                 <span class="icon" data-icon="arrow-up-right" aria-hidden="true"></span>
+                Build Guide
+              </a>
+              <a href="https://makerworld.com/en/models/2967248-wind-turbine-project-functional-simple-turbine#profileId-3327133"
+                 target="_blank" rel="noopener noreferrer"
+                 class="card-link">
+                <span class="icon" data-icon="zap" aria-hidden="true"></span>
                 MakerWorld Page
               </a>
             </div>
@@ -711,23 +737,23 @@
             <ol class="capabilities-list" aria-label="Key capabilities">
               <li>
                 <span class="cap-idx">[01]</span>
-                <span>Dual-capacity motor housing — optimized for standard 24mm or high-power 32mm motors to maximize battery charging efficiency</span>
+                <span>Motor-as-generator drivetrain — a three-blade printed rotor spins a small brushed DC motor, and a four-diode bridge rectifier keeps the output positive whichever way a gust turns it</span>
               </li>
               <li>
                 <span class="cap-idx">[02]</span>
-                <span>Zero-friction yaw tracking — integrated high-tolerance bearing pivot system (27mm OD / 15.5mm ID) with internal anti-wrap cable routing</span>
+                <span>Boost conversion — an MT3608 module lifts anything above about 2 V to a steady 5 V; each turbine has its own bridge and boost, and both outputs join at the charger</span>
               </li>
               <li>
                 <span class="cap-idx">[03]</span>
-                <span>Structural resilience — anti-sag tail stabilizer and weatherproof motor cowling custom-engineered for harsh balcony environments</span>
+                <span>Protected 18650 charging — a TP4056 module with cell protection charges to 4.2 V, all hand-soldered on perfboard from three cheap modules with no custom PCB</span>
               </li>
               <li>
                 <span class="cap-idx">[04]</span>
-                <span>Passive AC-to-DC bridge rectification — onboard 1N5819 Schottky diode array with high-capacity electrolytic ripple filtration</span>
+                <span>Printed mechanics — tail boom and fin, yaw pivot, pole and a railing clamp with a locking pin, in Medium and Large print profiles (0.2 mm layers, 2 walls, 15% infill)</span>
               </li>
               <li>
                 <span class="cap-idx">[05]</span>
-                <span>Integrated battery management — TP4056 lithium-ion charge controller with full over-charge/over-discharge cell protection</span>
+                <span>Interactive build guide — a live site with an animated energy-flow simulation, schematic, annotated board photo, soldering steps with checks, and an animated assembly</span>
               </li>
             </ol>
 
@@ -735,7 +761,7 @@
               <div class="details-spec-block">
                 <p class="details-block-label">// PIPELINE SPECIFICATION</p>
                 <p class="details-block-text">
-                  A fully functional wind-energy harvesting system custom-engineered for apartment balconies and off-grid battery charging. Built as an optimized FDM 3D-printed assembly, it features a weather-resistant motor cover, structural tail stabilizing braces to prevent plastic creep, and a friction-free bearing-pivot yaw system with clean internal cable management. The integrated electronics pipeline utilizes an on-board Schottky bridge rectifier and dual MT3608 boost converters to regulate erratic, wind-generated voltages into a stable charge current for an 18650 lithium-ion cell via a TP4056 battery management module, providing a robust off-grid power solution.
+                  A 3D-printed balcony turbine that charges an 18650 Li-ion cell. The blades spin a small DC motor used as a generator; its voltage rises and falls with the wind, so it passes through a bridge rectifier, a smoothing capacitor, an MT3608 boost converter and a TP4056 charger before it reaches the battery. The charging box takes two turbines, and the whole chain is documented in an open-source build guide with the parts list, schematic and soldering order. It is a functional demonstrator of how real turbines work rather than a power source: at this scale the output is modest. Remix of Basic Wind Turbine by kjt270000 (CC BY).
                 </p>
               </div>
               <div class="details-spec-block">
@@ -743,8 +769,8 @@
                 <div class="details-tags">
                   <span class="detail-tag">#Hardware</span>
                   <span class="detail-tag">#3D-Printing</span>
-                  <span class="detail-tag">#Electronics</span>
-                  <span class="detail-tag">#Off-Grid</span>
+                  <span class="detail-tag">#Power-Electronics</span>
+                  <span class="detail-tag">#Open-Source</span>
                 </div>
               </div>
             </div>

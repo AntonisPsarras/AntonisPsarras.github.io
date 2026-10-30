@@ -263,8 +263,8 @@ function buildTurbine(kit, world, g) {
   const parts = { rotor, cowl, motor, tail, bearing };
   const offsets = { rotor: [-0.17, 0, 0], cowl: [-0.09, 0.0, 0], motor: [0, 0.035, 0], tail: [0.14, 0, 0], bearing: [0, -0.1, 0] };
   const labels = {
-    rotor: 'ROTOR · 3 BLADES', cowl: 'WEATHERPROOF COWLING', motor: 'MOTOR HOUSING · 24 / 32 MM',
-    tail: 'ANTI-SAG TAIL BRACE', bearing: 'YAW BEARING · 27 × 15.5 MM',
+    rotor: 'ROTOR · 3 BLADES', cowl: 'NACELLE COVER', motor: 'MOTOR = GENERATOR',
+    tail: 'TAIL BOOM + FIN', bearing: 'YAW PIVOT',
   };
   const state = { exploded: 0, target: 0, fan: true, fanSpeed: 1, rotorSpeed: 0 };
   const lp = new THREE.Vector3();

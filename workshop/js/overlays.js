@@ -122,9 +122,20 @@ export class Overlays {
       wrap.setAttribute('role', 'listitem');
       const img = document.createElement('img');
       img.className = 'carousel-image';
-      img.src = `../${file}`;
-      img.loading = i === 0 ? 'eager' : 'lazy';
+      img.loading = i < 3 ? 'eager' : 'lazy';
       img.decoding = 'async';
+      wrap.classList.add('is-loading');
+      const settle = () => {
+        wrap.classList.remove('is-loading');
+        // Chain the rest of the gallery in the background, one slide per finished one.
+        if (!wrap.isConnected) return;
+        const next = Array.from(gallery.querySelectorAll('img')).find((el) => el.loading === 'lazy');
+        if (next) next.loading = 'eager';
+      };
+      img.addEventListener('load', settle, { once: true });
+      img.addEventListener('error', settle, { once: true });
+      img.src = `../${file}`;
+      if (img.complete) settle();
       img.alt = p.images.length > 1 ? `${p.imageAlt} — view ${i + 1} of ${p.images.length}` : p.imageAlt;
       wrap.appendChild(img);
       gallery.appendChild(wrap);
@@ -162,6 +173,10 @@ export class Overlays {
     if (!this.slideCount) return;
     const gallery = document.getElementById('modal-gallery');
     this.slide = Math.max(0, Math.min(index, this.slideCount - 1));
+    // Start fetching neighbouring slides early; lazy images in a horizontal scroller can lag.
+    gallery.querySelectorAll('img').forEach((img, i) => {
+      if (Math.abs(i - this.slide) <= 2) img.loading = 'eager';
+    });
     if (scroll) {
       const s = gallery.children[this.slide];
       if (s) gallery.scrollTo({ left: s.offsetLeft, behavior: reducedMotion() ? 'auto' : 'smooth' });

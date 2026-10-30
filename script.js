@@ -101,8 +101,8 @@ const PROJECTS = {
     side: 'left',
   },
   wt: {
-    images: ['turbine-animation.gif', 'turbine1.png', 'turbine2.jpg', 'turbine3.jpg'],
-    imageAlt: 'Functional Wind Turbine System — hardware assembly',
+    images: ['turbine-animation.gif', 'turbine-pair.jpg', 'turbine1.webp', 'turbine3.webp', 'turbine-clamp.webp', 'turbine-assembly.gif', 'turbine-energy-flow.gif', 'turbine-schematic.webp', 'turbine2.jpg', 'turbine-board-annotated.webp'],
+    imageAlt: 'Wind Turbine Project — printed balcony turbine, assembly, circuit and charging box',
     layout: 'side',
     side: 'right',
   },
@@ -171,6 +171,12 @@ function initProjectInspect(terminal) {
     if (slideCount === 0) return;
     activeSlide = Math.max(0, Math.min(index, slideCount - 1));
 
+    /* Lazy images far down a horizontal scroller can stay unloaded until the
+       slide is already on screen; start fetching the neighbours early. */
+    gallery.querySelectorAll('img').forEach((img, i) => {
+      if (Math.abs(i - activeSlide) <= 2) img.loading = 'eager';
+    });
+
     if (scroll) {
       const slide = gallery.children[activeSlide];
       if (slide) {
@@ -213,9 +219,23 @@ function initProjectInspect(terminal) {
       wrapper.setAttribute('role', 'listitem');
 
       const img = document.createElement('img');
-      img.src = src;
       img.className = 'carousel-image';
-      img.loading = i === 0 ? 'eager' : 'lazy';
+      img.loading = i < 3 ? 'eager' : 'lazy';
+      img.decoding = 'async';
+      /* Hold a pulsing placeholder until the file arrives, so a slow slide
+         reads as "loading" rather than as an empty frame. */
+      wrapper.classList.add('is-loading');
+      const settle = () => {
+        wrapper.classList.remove('is-loading');
+        /* Chain the rest of the gallery in the background, one slide per finished one. */
+        if (!wrapper.isConnected) return;
+        const next = Array.from(gallery.querySelectorAll('img')).find((el) => el.loading === 'lazy');
+        if (next) next.loading = 'eager';
+      };
+      img.addEventListener('load', settle, { once: true });
+      img.addEventListener('error', settle, { once: true });
+      img.src = src;
+      if (img.complete) settle();
       img.alt = project.images.length > 1
         ? `${project.imageAlt} — view ${i + 1} of ${project.images.length}`
         : project.imageAlt;

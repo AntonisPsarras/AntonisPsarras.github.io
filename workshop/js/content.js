@@ -25,10 +25,10 @@ export const PROJECTS = {
     links: [['GitHub', 'https://github.com/AntonisPsarras/Scholilink']],
   },
   wt: {
-    sys: 'SYS_03 // HARDWARE', title: 'Wind Turbine System', tagline: 'Functional Balcony Power Generator',
-    images: ['turbine-animation.gif', 'turbine1.png', 'turbine2.jpg', 'turbine3.jpg'],
-    imageAlt: 'Functional Wind Turbine System — hardware assembly', layout: 'side', side: 'right',
-    links: [['MakerWorld', 'https://makerworld.com/en/models/2967248-wind-turbine-project-functional-simple-turbine#profileId-3327133']],
+    sys: 'SYS_03 // HARDWARE', title: 'Wind Turbine Project', tagline: 'Balcony Wind Turbine That Charges an 18650 Cell',
+    images: ['turbine-animation.gif', 'turbine-pair.jpg', 'turbine1.webp', 'turbine3.webp', 'turbine-clamp.webp', 'turbine-assembly.gif', 'turbine-energy-flow.gif', 'turbine-schematic.webp', 'turbine2.jpg', 'turbine-board-annotated.webp'],
+    imageAlt: 'Wind Turbine Project — printed balcony turbine, assembly, circuit and charging box', layout: 'side', side: 'right',
+    links: [['GitHub', 'https://github.com/AntonisPsarras/wind-turbine-project'], ['Build Guide', 'https://antonispsarras.github.io/wind-turbine-project/'], ['MakerWorld', 'https://makerworld.com/en/models/2967248-wind-turbine-project-functional-simple-turbine#profileId-3327133']],
   },
   mc: {
     sys: 'SYS_04 // HARDWARE', title: 'MoonCamp', tagline: 'Modular Magnetic Lunar Habitat',
@@ -185,7 +185,7 @@ export const HOTSPOTS = {
   },
   scope: {
     sys: 'ELEC_02 // SCOPE', title: 'Rectified waveform',
-    body: ['A full-wave rectified sine: what the wind turbine’s 1N5819 Schottky bridge makes of the generator’s AC, before the boost converters and the TP4056 charger take over.'],
+    body: ['A full-wave rectified sine: what the wind turbine’s diode bridge makes of the generator’s AC, before the boost converters and the TP4056 charger take over.'],
     related: ['wt'],
   },
   multimeter: {
@@ -241,7 +241,7 @@ export const HOTSPOTS = {
   },
   turbine: {
     sys: 'SYS_03 // HARDWARE', title: 'Turbine test stand',
-    body: ['A workshop test rig: the turbine faces a fan instead of weather.', 'The exposed plate shows the charging chain — a Schottky bridge rectifier, two MT3608 boost converters and a TP4056 charging an 18650 cell. The twisted blade on the floor is a V1.'],
+    body: ['A workshop test rig: the turbine faces a fan instead of weather.', 'The exposed plate shows the charging chain — a diode bridge rectifier, two MT3608 boost converters and a TP4056 charging an 18650 cell. The twisted blade on the floor is a V1.'],
     project: 'wt',
   },
   mooncamp: {
